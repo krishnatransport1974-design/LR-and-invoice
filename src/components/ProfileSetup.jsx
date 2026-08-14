@@ -1,56 +1,111 @@
-import { useState } from 'react';
-import { Upload, Save, Truck } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Upload, Save, Loader2, Building2 } from 'lucide-react';
+import { supabase } from '../supabase';
 
-export default function ProfileSetup({ onSave, initialData }) {
-  const [profile, setProfile] = useState(initialData || {
+export default function ProfileSetup({ setBusinessData, setIsProfileSetupComplete, user }) {
+  const [formData, setFormData] = useState({
     name: '',
     address: '',
     phone: '',
     email: '',
     gstin: '',
-    city: 'Mumbai', // Default to Mumbai as requested
+    jurisdiction_city: 'Mumbai',
     logo: null
   });
+  const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
 
-  const handleChange = (field, value) => {
-    setProfile(prev => ({ ...prev, [field]: value }));
-  };
+  useEffect(() => {
+    // Try to fetch existing data if they are editing
+    const fetchProfile = async () => {
+      try {
+        const { data } = await supabase
+          .from('business_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+        if (data) {
+          setFormData(data);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setFetching(false);
+      }
+    };
+    fetchProfile();
+  }, [user.id]);
 
   const handleLogoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        handleChange('logo', reader.result);
+        setFormData(prev => ({ ...prev, logo: reader.result }));
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    onSave(profile);
+    setLoading(true);
+    
+    try {
+      const payload = {
+        user_id: user.id,
+        name: formData.name,
+        address: formData.address,
+        phone: formData.phone,
+        email: formData.email,
+        gstin: formData.gstin,
+        jurisdiction_city: formData.jurisdiction_city,
+        logo: formData.logo,
+      };
+
+      const { error } = await supabase
+        .from('business_profiles')
+        .upsert(payload, { onConflict: 'user_id' });
+
+      if (error) throw error;
+
+      setBusinessData(payload);
+      setIsProfileSetupComplete(true);
+    } catch (err) {
+      console.error('Error saving profile:', err);
+      alert('Failed to save profile. Check connection or RLS policies.');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (fetching) {
+    return (
+      <div style={{ display: 'flex', height: '100vh', justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f172a', color: 'white' }}>
+        Loading your profile data...
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '2rem' }}>
       <div className="glass-panel" style={{ width: '100%', maxWidth: '600px', padding: '2rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div className="logo-icon" style={{ display: 'inline-flex', marginBottom: '1rem' }}>
-            <Truck size={32} />
+            <Building2 size={32} />
           </div>
           <h2>Business Profile Setup</h2>
           <p style={{ color: 'var(--text-secondary)' }}>Set up your transporter details. This will be automatically filled on all receipts.</p>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSave}>
           <div className="form-group">
             <label>Business Name (e.g., Krishna Transport)</label>
             <input 
               type="text" 
               required
-              value={profile.name} 
-              onChange={(e) => handleChange('name', e.target.value)} 
+              value={formData.name} 
+              onChange={(e) => setFormData({...formData, name: e.target.value})} 
             />
           </div>
 
@@ -58,16 +113,16 @@ export default function ProfileSetup({ onSave, initialData }) {
             <label>Business Logo</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <label className="btn btn-secondary" style={{ cursor: 'pointer', margin: 0 }}>
-                <Upload size={16} /> {profile.logo ? 'Change Logo' : 'Upload Logo'}
+                <Upload size={16} /> {formData.logo ? 'Change Logo' : 'Upload Logo'}
                 <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} />
               </label>
-              {profile.logo && (
+              {formData.logo && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <img src={profile.logo} alt="Preview" style={{ height: '40px', borderRadius: '4px' }} />
+                  <img src={formData.logo} alt="Preview" style={{ height: '40px', borderRadius: '4px' }} />
                   <button 
                     type="button"
                     className="btn btn-danger" 
-                    onClick={() => handleChange('logo', null)}
+                    onClick={() => setFormData({...formData, logo: null})}
                     style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
                   >
                     Remove
@@ -82,8 +137,8 @@ export default function ProfileSetup({ onSave, initialData }) {
             <textarea 
               rows="2" 
               required
-              value={profile.address} 
-              onChange={(e) => handleChange('address', e.target.value)} 
+              value={formData.address} 
+              onChange={(e) => setFormData({...formData, address: e.target.value})} 
             />
           </div>
 
@@ -93,16 +148,16 @@ export default function ProfileSetup({ onSave, initialData }) {
               <input 
                 type="text" 
                 required
-                value={profile.phone} 
-                onChange={(e) => handleChange('phone', e.target.value)} 
+                value={formData.phone} 
+                onChange={(e) => setFormData({...formData, phone: e.target.value})} 
               />
             </div>
             <div className="form-group">
               <label>Email Address</label>
               <input 
                 type="email" 
-                value={profile.email} 
-                onChange={(e) => handleChange('email', e.target.value)} 
+                value={formData.email} 
+                onChange={(e) => setFormData({...formData, email: e.target.value})} 
               />
             </div>
           </div>
@@ -112,24 +167,29 @@ export default function ProfileSetup({ onSave, initialData }) {
               <label>GSTIN</label>
               <input 
                 type="text" 
-                value={profile.gstin} 
-                onChange={(e) => handleChange('gstin', e.target.value)} 
+                value={formData.gstin} 
+                onChange={(e) => setFormData({...formData, gstin: e.target.value})} 
               />
             </div>
-            <div className="form-group">
-              <label>Jurisdiction City</label>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>JURISDICTION CITY</label>
               <input 
                 type="text" 
                 required
-                value={profile.city} 
-                onChange={(e) => handleChange('city', e.target.value)} 
+                value={formData.jurisdiction_city} 
+                onChange={(e) => setFormData({...formData, jurisdiction_city: e.target.value})} 
                 placeholder="e.g. Mumbai"
               />
             </div>
           </div>
-
-          <button type="submit" className="btn btn-primary w-full" style={{ marginTop: '1rem', padding: '0.75rem' }}>
-            <Save size={18} /> Save & Continue
+          
+          <button 
+            type="submit" 
+            className="btn btn-primary" 
+            style={{ width: '100%', padding: '16px', fontSize: '1.1rem', display: 'flex', justifyContent: 'center', gap: '8px' }}
+            disabled={loading}
+          >
+            {loading ? <Loader2 size={24} className="spinner" /> : <><Save size={24} /> Save & Continue</>}
           </button>
         </form>
       </div>

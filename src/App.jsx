@@ -8,40 +8,18 @@ import InvoicePreview from './components/InvoicePreview';
 import LRPreview from './components/LRPreview';
 import ProfileSetup from './components/ProfileSetup';
 import History from './components/History';
+import Auth from './components/Auth';
+import { supabase } from './supabase';
 
 function App() {
-  const [profileLoaded, setProfileLoaded] = useState(false);
-  const [showProfileSetup, setShowProfileSetup] = useState(true);
-  const [printMode, setPrintMode] = useState('both'); // 'both', 'main', or 'driver'
+  const [session, setSession] = useState(null);
+  const [businessData, setBusinessData] = useState(null);
+  const [isProfileSetupComplete, setIsProfileSetupComplete] = useState(false);
+  const [isCheckingProfile, setIsCheckingProfile] = useState(true);
   
+  const [printMode, setPrintMode] = useState('both'); // 'both', 'main', or 'driver'
   const [docType, setDocType] = useState('lr'); // Default to LR as requested
   
-  // Business details now loaded from localStorage
-  const [businessData, setBusinessData] = useState({
-    name: '',
-    address: '',
-    gstin: '',
-    phone: '',
-    email: '',
-    city: 'Mumbai',
-    logo: null
-  });
-
-  useEffect(() => {
-    const savedProfile = localStorage.getItem('businessProfile');
-    if (savedProfile) {
-      setBusinessData(JSON.parse(savedProfile));
-      setShowProfileSetup(false);
-    }
-    setProfileLoaded(true);
-  }, []);
-
-  const saveProfile = (data) => {
-    localStorage.setItem('businessProfile', JSON.stringify(data));
-    setBusinessData(data);
-    setShowProfileSetup(false);
-  };
-
   // State for Invoice
   const [invoiceData, setInvoiceData] = useState({
     invoiceNumber: 'INV-001',
@@ -75,6 +53,59 @@ function App() {
     includeDriverCopy: true
   });
 
+  useEffect(() => {
+    // 1. Get current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session) checkBusinessProfile(session.user.id);
+      else setIsCheckingProfile(false);
+    });
+
+    // 2. Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) {
+        checkBusinessProfile(session.user.id);
+      } else {
+        setBusinessData(null);
+        setIsProfileSetupComplete(false);
+        setIsCheckingProfile(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const checkBusinessProfile = async (userId) => {
+    try {
+      setIsCheckingProfile(true);
+      const { data, error } = await supabase
+        .from('business_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (data) {
+        setBusinessData(data);
+        setIsProfileSetupComplete(true);
+      } else {
+        setBusinessData(null);
+        setIsProfileSetupComplete(false);
+      }
+    } catch (error) {
+      console.log('No profile found or error fetching:', error.message);
+      setIsProfileSetupComplete(false);
+    } finally {
+      setIsCheckingProfile(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
   const handleLoadLR = (historicalLR) => {
     const parsedGoods = typeof historicalLR.goods === 'string' ? JSON.parse(historicalLR.goods) : historicalLR.goods;
     
@@ -95,29 +126,40 @@ function App() {
 
   const handlePrint = (mode) => {
     setPrintMode(mode);
-    // Give React time to re-render the DOM with only the selected copy
     setTimeout(() => {
       window.print();
-      // Restore to showing both copies on screen after print dialog closes
       setPrintMode('both');
     }, 100);
   };
 
-  if (!profileLoaded) return null; // Wait for localStorage check
+  if (!session) {
+    return <Auth />;
+  }
 
-  if (showProfileSetup) {
-    return <ProfileSetup onSave={saveProfile} initialData={businessData.name ? businessData : null} />;
+  if (isCheckingProfile) {
+    return (
+      <div style={{ display: 'flex', height: '100vh', justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f172a', color: 'white' }}>
+        Loading your profile...
+      </div>
+    );
+  }
+
+  if (!isProfileSetupComplete) {
+    return <ProfileSetup 
+             setBusinessData={setBusinessData} 
+             setIsProfileSetupComplete={setIsProfileSetupComplete} 
+             user={session.user}
+           />;
   }
 
   return (
     <div className="app-container">
-      {/* Header - Hidden on Print */}
       <header className="app-header no-print glass-panel">
         <div className="header-brand">
           <div className="logo-icon">
             <Truck size={24} />
           </div>
-          <h1>{businessData.name} <span className="text-muted">| DocuGen</span></h1>
+          <h1>{businessData.name || 'DocuGen'} <span className="text-muted">| DocuGen</span></h1>
         </div>
         
         <div className="doc-type-selector">
@@ -142,8 +184,11 @@ function App() {
         </div>
         
         <div className="header-actions" style={{ display: 'flex', gap: '1rem' }}>
-          <button className="btn btn-secondary" onClick={() => setShowProfileSetup(true)}>
+          <button className="btn btn-secondary" onClick={() => setIsProfileSetupComplete(false)}>
             <Settings size={18} /> Profile
+          </button>
+          <button className="btn btn-secondary" onClick={handleLogout} style={{ backgroundColor: '#ef4444', color: 'white' }}>
+            Log Out
           </button>
           
           {docType === 'lr' ? (
@@ -167,7 +212,7 @@ function App() {
       <main className="workspace">
         {docType === 'history' ? (
           <div style={{ padding: '2rem', flex: 1 }}>
-            <History onLoadLR={handleLoadLR} />
+            <History onLoadLR={handleLoadLR} user={session.user} />
           </div>
         ) : (
           <>
@@ -182,6 +227,7 @@ function App() {
                   <InvoiceForm 
                     invoiceData={invoiceData}
                     setInvoiceData={setInvoiceData}
+                    user={session.user}
                   />
                 ) : (
                   <LRForm 

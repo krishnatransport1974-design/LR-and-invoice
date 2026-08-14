@@ -3,7 +3,7 @@ import { Download, RefreshCw, FileText, Lock } from 'lucide-react';
 import { supabase } from '../supabase';
 import * as XLSX from 'xlsx';
 
-export default function History({ onLoadLR }) {
+export default function History({ onLoadLR, user }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
@@ -13,14 +13,14 @@ export default function History({ onLoadLR }) {
   const [error, setError] = useState(null);
 
   const fetchLRs = async () => {
-    setLoading(true);
-    setError(null);
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('lorry_receipts')
         .select('*')
+        .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
-
+      
       if (error) throw error;
       setLrs(data || []);
     } catch (err) {

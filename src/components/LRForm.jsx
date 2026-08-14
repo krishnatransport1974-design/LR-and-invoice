@@ -2,7 +2,7 @@ import { Plus, Trash2, Database, Loader2, FilePlus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 
-export default function LRForm({ lrData, setLrData }) {
+export default function LRForm({ lrData, setLrData, user }) {
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null);
 
@@ -43,6 +43,7 @@ export default function LRForm({ lrData, setLrData }) {
       const { error } = await supabase
         .from('lorry_receipts')
         .insert([{
+          user_id: user?.id,
           lr_number: lrData.lrNumber,
           date: lrData.date,
           inv_no: lrData.invNo,
@@ -79,6 +80,7 @@ export default function LRForm({ lrData, setLrData }) {
       const { data, error } = await supabase
         .from('lorry_receipts')
         .select('lr_number')
+        .eq('user_id', user?.id)
         .order('created_at', { ascending: false })
         .limit(1);
 
