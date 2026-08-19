@@ -233,6 +233,7 @@ function App() {
                   <LRForm 
                     lrData={lrData}
                     setLrData={setLrData}
+                    user={session.user}
                   />
                 )}
               </div>

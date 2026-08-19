@@ -127,7 +127,7 @@ const SingleLR = ({ businessData, lrData, copyType, bgColor }) => {
       </div>
 
       {/* Modern Table */}
-      <div style={{ borderRadius: '8px', border: `1px solid ${borderColor}`, overflow: 'hidden', flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ borderRadius: '8px', border: `1px solid ${borderColor}`, flex: 1, display: 'flex', flexDirection: 'column' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <thead>
             <tr style={{ backgroundColor: lightGray, borderBottom: `2px solid ${borderColor}` }}>
@@ -151,7 +151,7 @@ const SingleLR = ({ businessData, lrData, copyType, bgColor }) => {
               </tr>
             ))}
             {/* Fill remaining space to keep layout structure */}
-            <tr style={{ height: '100%' }}>
+            <tr className="filler-row">
               <td colSpan="6"></td>
             </tr>
           </tbody>
@@ -199,12 +199,20 @@ export default function LRPreview({ businessData, lrData, printMode = 'both' }) 
     <>
       <style>
         {`
+          @media screen {
+            .filler-row {
+              height: 100%;
+            }
+          }
           @media print {
             @page { size: landscape; margin: 0; }
             body { 
               -webkit-print-color-adjust: exact; 
               print-color-adjust: exact; 
               margin: 0;
+            }
+            .filler-row {
+              display: none !important;
             }
             .single-lr-page {
               height: 100vh !important;
