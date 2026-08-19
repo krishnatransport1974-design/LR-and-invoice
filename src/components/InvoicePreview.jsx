@@ -74,9 +74,20 @@ export default function InvoicePreview({ businessData, invoiceData }) {
         </div>
       )}
 
-      <div className="doc-footer">
-        <p>This is a computer generated document. No signature is required.</p>
-        <p style={{ marginTop: '0.5rem' }}><strong>{businessData.name}</strong></p>
+      <div className="doc-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '2rem' }}>
+        <div>
+          <p>This is a computer generated document.</p>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          {businessData.signature ? (
+            <img src={businessData.signature} alt="Signature" style={{ maxHeight: '50px', objectFit: 'contain', marginBottom: '5px' }} />
+          ) : (
+            <div style={{ height: '50px' }}></div>
+          )}
+          <div style={{ width: '200px', borderTop: '2px solid #1e293b', paddingTop: '8px', fontWeight: 'bold' }}>
+            For {businessData.name || 'TRANSPORT CO.'}
+          </div>
+        </div>
       </div>
     </div>
   );

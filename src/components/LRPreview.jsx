@@ -8,9 +8,9 @@ const SingleLR = ({ businessData, lrData, copyType, bgColor }) => {
   return (
     <div style={{
       backgroundColor: bgColor,
-      padding: '30px 40px',
+      padding: '20px 30px',
       position: 'relative',
-      minHeight: '792px', /* A4 landscape height */
+      minHeight: '750px', /* A4 landscape height approximately */
       boxSizing: 'border-box',
       display: 'flex',
       flexDirection: 'column',
@@ -31,7 +31,7 @@ const SingleLR = ({ businessData, lrData, copyType, bgColor }) => {
       </div>
 
       {/* Header Section */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
         
         {/* Left: Prominent Logo */}
         <div style={{ width: '250px', display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
@@ -95,7 +95,7 @@ const SingleLR = ({ businessData, lrData, copyType, bgColor }) => {
       </div>
 
       {/* From / To & Invoice Info */}
-      <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', gap: '20px', marginBottom: '15px' }}>
         <div style={{ flex: 1, backgroundColor: lightGray, borderRadius: '8px', padding: '12px 20px', display: 'flex', alignItems: 'center' }}>
           <span style={{ color: '#64748b', fontWeight: '600', marginRight: '10px', fontSize: '0.9rem' }}>From:</span>
           <span style={{ fontWeight: '700', fontSize: '1.1rem', flex: 1 }}>{lrData.from}</span>
@@ -110,7 +110,7 @@ const SingleLR = ({ businessData, lrData, copyType, bgColor }) => {
       </div>
 
       {/* Consignor / Consignee Modern Cards */}
-      <div style={{ display: 'flex', gap: '20px', marginBottom: '25px' }}>
+      <div style={{ display: 'flex', gap: '20px', marginBottom: '15px' }}>
         {/* Consignor */}
         <div style={{ flex: 1, backgroundColor: 'white', border: `1px solid ${borderColor}`, borderLeft: `4px solid ${accentColor}`, borderRadius: '8px', padding: '15px' }}>
           <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#64748b', fontWeight: '700', marginBottom: '5px' }}>Consignor (Sender)</div>
@@ -159,10 +159,10 @@ const SingleLR = ({ businessData, lrData, copyType, bgColor }) => {
       </div>
 
       {/* Footer / Disclaimers / Signatures */}
-      <div style={{ marginTop: '25px', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ marginTop: '15px', display: 'flex', flexDirection: 'column' }}>
         
         {/* Disclaimers */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: '#64748b', lineHeight: '1.4', marginBottom: '30px', padding: '15px', backgroundColor: lightGray, borderRadius: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: '#64748b', lineHeight: '1.4', marginBottom: '15px', padding: '10px 15px', backgroundColor: lightGray, borderRadius: '8px' }}>
           <div style={{ width: '48%' }}>
             <strong>Note:</strong> In case of any shortage or difference in material kindly endorse on receipt. No shortage will be entertained in absence of any such endorsement in challan with driver's signature. No responsibility for leakage or damage in natural calamity. Kindly receive the above material in good condition & correct measure.
           </div>
@@ -172,17 +172,21 @@ const SingleLR = ({ businessData, lrData, copyType, bgColor }) => {
         </div>
 
         {/* Signatures */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20px', marginTop: '40px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20px', marginTop: '20px' }}>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ height: '50px' }}></div> {/* Empty space for signing */}
+            <div style={{ height: '40px' }}></div> {/* Empty space for signing */}
             <div style={{ width: '180px', borderTop: `2px solid ${primaryColor}`, paddingTop: '8px', fontWeight: '700', fontSize: '0.85rem' }}>Driver's Signature</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ height: '50px' }}></div> {/* Empty space for signing */}
+            <div style={{ height: '40px' }}></div> {/* Empty space for signing */}
             <div style={{ width: '180px', borderTop: `2px solid ${primaryColor}`, paddingTop: '8px', fontWeight: '700', fontSize: '0.85rem' }}>Receiver's Signature</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ height: '50px' }}></div> {/* Empty space for signing */}
+            {businessData.signature ? (
+              <img src={businessData.signature} alt="Signature" style={{ maxHeight: '40px', objectFit: 'contain', marginBottom: '5px' }} />
+            ) : (
+              <div style={{ height: '40px' }}></div>
+            )}
             <div style={{ width: '220px', borderTop: `2px solid ${accentColor}`, paddingTop: '8px', fontWeight: '800', fontSize: '0.85rem', color: accentColor }}>
               For {businessData.name ? businessData.name.toUpperCase() : 'TRANSPORT CO.'}
             </div>

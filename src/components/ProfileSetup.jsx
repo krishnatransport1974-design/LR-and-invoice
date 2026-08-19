@@ -10,7 +10,8 @@ export default function ProfileSetup({ setBusinessData, setIsProfileSetupComplet
     email: '',
     gstin: '',
     jurisdiction_city: 'Mumbai',
-    logo: null
+    logo: null,
+    signature: null
   });
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
@@ -47,6 +48,17 @@ export default function ProfileSetup({ setBusinessData, setIsProfileSetupComplet
     }
   };
 
+  const handleSignatureUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, signature: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -61,6 +73,7 @@ export default function ProfileSetup({ setBusinessData, setIsProfileSetupComplet
         gstin: formData.gstin,
         jurisdiction_city: formData.jurisdiction_city,
         logo: formData.logo,
+        signature: formData.signature
       };
 
       const { error } = await supabase
@@ -109,26 +122,51 @@ export default function ProfileSetup({ setBusinessData, setIsProfileSetupComplet
             />
           </div>
 
-          <div className="form-group">
-            <label>Business Logo</label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <label className="btn btn-secondary" style={{ cursor: 'pointer', margin: 0 }}>
-                <Upload size={16} /> {formData.logo ? 'Change Logo' : 'Upload Logo'}
-                <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} />
-              </label>
-              {formData.logo && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <img src={formData.logo} alt="Preview" style={{ height: '40px', borderRadius: '4px' }} />
-                  <button 
-                    type="button"
-                    className="btn btn-danger" 
-                    onClick={() => setFormData({...formData, logo: null})}
-                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
-                  >
-                    Remove
-                  </button>
-                </div>
-              )}
+          <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>Business Logo</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <label className="btn btn-secondary" style={{ cursor: 'pointer', margin: 0 }}>
+                  <Upload size={16} /> {formData.logo ? 'Change Logo' : 'Upload Logo'}
+                  <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} />
+                </label>
+                {formData.logo && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <img src={formData.logo} alt="Preview" style={{ height: '40px', borderRadius: '4px' }} />
+                    <button 
+                      type="button"
+                      className="btn btn-danger" 
+                      onClick={() => setFormData({...formData, logo: null})}
+                      style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>Authorized Signature (Transparent PNG recommended)</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <label className="btn btn-secondary" style={{ cursor: 'pointer', margin: 0 }}>
+                  <Upload size={16} /> {formData.signature ? 'Change Sign' : 'Upload Sign'}
+                  <input type="file" accept="image/*" onChange={handleSignatureUpload} style={{ display: 'none' }} />
+                </label>
+                {formData.signature && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <img src={formData.signature} alt="Preview" style={{ height: '40px', borderRadius: '4px' }} />
+                    <button 
+                      type="button"
+                      className="btn btn-danger" 
+                      onClick={() => setFormData({...formData, signature: null})}
+                      style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
