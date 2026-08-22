@@ -1,0 +1,234 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '../supabase';
+import { Loader2, Plus, Search, FileText, Printer, FileDown, ArrowLeft } from 'lucide-react';
+import toast from 'react-hot-toast';
+import InvoiceForm from '../components/InvoiceForm';
+import InvoicePreview from '../components/InvoicePreview';
+import { useOutletContext } from 'react-router-dom';
+import html2pdf from 'html2pdf.js';
+
+export default function InvoiceList() {
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  
+  // Editor State
+  const [isEditing, setIsEditing] = useState(false);
+  const { businessData } = useOutletContext();
+  
+  const [invoiceData, setInvoiceData] = useState({
+    invoiceNumber: '',
+    date: new Date().toISOString().split('T')[0],
+    dueDate: '',
+    customer_id: null,
+    clientName: '',
+    clientAddress: '',
+    items: [{ id: Date.now(), description: '', quantity: 1, price: 0 }],
+    taxRate: 18,
+    notes: '',
+    lr_id: null
+  });
+
+  const fetchInvoices = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('invoices')
+        .select('*')
+        .order('created_at', { ascending: false });
+        
+      if (error) throw error;
+      setInvoices(data || []);
+    } catch (err) {
+      toast.error('Failed to load Invoices');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isEditing) fetchInvoices();
+  }, [isEditing]);
+
+  const handleCreateNew = () => {
+    // Generate next Invoice number based on history
+    let nextInvStr = 'INV-0001';
+    if (invoices.length > 0 && invoices[0].invoice_number) {
+      const match = invoices[0].invoice_number.match(/(\d+)$/);
+      if (match) {
+        const numPart = match[1];
+        const nextNum = parseInt(numPart, 10) + 1;
+        nextInvStr = invoices[0].invoice_number.slice(0, -numPart.length) + String(nextNum).padStart(numPart.length, '0');
+      }
+    }
+
+    setInvoiceData({
+      invoiceNumber: nextInvStr,
+      date: new Date().toISOString().split('T')[0],
+      dueDate: '',
+      customer_id: null,
+      clientName: '',
+      clientAddress: '',
+      items: [{ id: Date.now(), description: '', quantity: 1, price: 0 }],
+      taxRate: 18,
+      notes: 'Thank you for your business.',
+      lr_id: null
+    });
+    setIsEditing(true);
+  };
+
+  const handleView = (inv) => {
+    setInvoiceData({
+      invoiceNumber: inv.invoice_number,
+      date: inv.date,
+      dueDate: inv.due_date || '',
+      customer_id: inv.customer_id,
+      clientName: inv.client_name,
+      clientAddress: inv.client_address,
+      items: typeof inv.items === 'string' ? JSON.parse(inv.items) : inv.items,
+      taxRate: inv.tax_rate,
+      notes: inv.notes || '',
+      lr_id: inv.lr_id
+    });
+    setIsEditing(true);
+  };
+
+  const generatePDF = () => {
+    const element = document.getElementById('invoice-preview-content');
+    if (!element) return;
+    const opt = {
+      margin:       0.5,
+      filename:     `Invoice_${invoiceData.invoiceNumber}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+    toast.promise(
+      html2pdf().set(opt).from(element).save(),
+      {
+        loading: 'Generating PDF...',
+        success: 'PDF downloaded!',
+        error: 'Failed to generate PDF',
+      }
+    );
+  };
+
+  const filteredInvoices = invoices.filter(inv => 
+    inv.invoice_number.toLowerCase().includes(search.toLowerCase()) || 
+    (inv.client_name && inv.client_name.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  if (isEditing) {
+    return (
+      <div className="flex flex-col h-full" style={{ margin: '-2rem' }}>
+        {/* Editor Header */}
+        <div className="flex items-center justify-between p-4 bg-white border-b sticky top-0 z-10 shadow-sm" style={{ borderColor: 'var(--border-color)' }}>
+          <div className="flex items-center gap-4">
+            <button className="btn btn-secondary" onClick={() => setIsEditing(false)}>
+              <ArrowLeft size={16} /> Back
+            </button>
+            <h2 className="text-lg">Invoice Editor: {invoiceData.invoiceNumber}</h2>
+          </div>
+          <div className="flex items-center gap-2">
+            <button className="btn btn-primary" onClick={generatePDF}>
+              <FileDown size={16} /> Download PDF
+            </button>
+            <button className="btn btn-secondary" onClick={() => window.print()}>
+              <Printer size={16} /> Print
+            </button>
+          </div>
+        </div>
+
+        {/* Editor Workspace */}
+        <div className="flex flex-1 overflow-hidden bg-gray-50" style={{ height: 'calc(100vh - 128px)' }}>
+          <div className="flex-1 overflow-y-auto p-4 border-r" style={{ borderColor: 'var(--border-color)', backgroundColor: 'white' }}>
+            <InvoiceForm invoiceData={invoiceData} setInvoiceData={setInvoiceData} />
+          </div>
+          <div className="flex-1 overflow-y-auto p-8 bg-gray-100 flex justify-center no-print">
+            <div id="invoice-preview-content" style={{ width: '210mm', minHeight: '297mm', backgroundColor: 'white', padding: '20mm', boxShadow: 'var(--shadow-md)' }}>
+              <InvoicePreview businessData={businessData} invoiceData={invoiceData} />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex justify-between items-center">
+        <h2>Invoices</h2>
+        <button className="btn btn-primary" onClick={handleCreateNew}>
+          <Plus size={16} /> Create Invoice
+        </button>
+      </div>
+
+      <div className="card">
+        <div className="form-group" style={{ maxWidth: '300px', position: 'relative' }}>
+          <Search size={16} style={{ position: 'absolute', left: '10px', top: '10px', color: 'var(--text-muted)' }} />
+          <input 
+            type="text" 
+            placeholder="Search by Invoice number, client..." 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{ paddingLeft: '2rem' }}
+          />
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-6 text-muted"><Loader2 className="spin" size={24} /></div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Invoice No.</th>
+                  <th>Client</th>
+                  <th>Subtotal</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredInvoices.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="text-center text-muted py-6">
+                      <div className="flex flex-col items-center gap-2">
+                        <FileText size={32} style={{ opacity: 0.5 }} />
+                        No Invoices found.
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredInvoices.map(inv => (
+                    <tr key={inv.id}>
+                      <td>{inv.date}</td>
+                      <td className="font-bold text-blue-600" style={{ color: 'var(--accent-primary)', cursor: 'pointer' }} onClick={() => handleView(inv)}>
+                        {inv.invoice_number}
+                      </td>
+                      <td>{inv.client_name}</td>
+                      <td>₹{Number(inv.subtotal).toFixed(2)}</td>
+                      <td className="font-bold">₹{Number(inv.total).toFixed(2)}</td>
+                      <td>
+                        <span className={`badge ${inv.status === 'Paid' ? 'badge-success' : 'badge-warning'}`}>
+                          {inv.status || 'Pending'}
+                        </span>
+                      </td>
+                      <td>
+                        <button className="btn-icon" onClick={() => handleView(inv)}>
+                          <FileText size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

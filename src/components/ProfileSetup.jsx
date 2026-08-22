@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { Upload, Save, Loader2, Building2 } from 'lucide-react';
 import { supabase } from '../supabase';
+import toast from 'react-hot-toast';
 
-export default function ProfileSetup({ setBusinessData, setIsProfileSetupComplete, user }) {
+export default function ProfileSetup({ setBusinessData, user }) {
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -10,39 +11,17 @@ export default function ProfileSetup({ setBusinessData, setIsProfileSetupComplet
     email: '',
     gstin: '',
     jurisdiction_city: 'Mumbai',
-    logo: null,
-    signature: null
+    logo_url: null,
+    signature_url: null
   });
   const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(true);
-
-  useEffect(() => {
-    // Try to fetch existing data if they are editing
-    const fetchProfile = async () => {
-      try {
-        const { data } = await supabase
-          .from('business_profiles')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-        if (data) {
-          setFormData(data);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setFetching(false);
-      }
-    };
-    fetchProfile();
-  }, [user.id]);
 
   const handleLogoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, logo: reader.result }));
+        setFormData(prev => ({ ...prev, logo_url: reader.result }));
       };
       reader.readAsDataURL(file);
     }
@@ -53,7 +32,7 @@ export default function ProfileSetup({ setBusinessData, setIsProfileSetupComplet
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, signature: reader.result }));
+        setFormData(prev => ({ ...prev, signature_url: reader.result }));
       };
       reader.readAsDataURL(file);
     }
@@ -64,56 +43,59 @@ export default function ProfileSetup({ setBusinessData, setIsProfileSetupComplet
     setLoading(true);
     
     try {
-      const payload = {
-        user_id: user.id,
-        name: formData.name,
-        address: formData.address,
-        phone: formData.phone,
-        email: formData.email,
-        gstin: formData.gstin,
-        jurisdiction_city: formData.jurisdiction_city,
-        logo: formData.logo,
-        signature: formData.signature
-      };
+      // 1. Insert into companies
+      const { data: company, error: companyErr } = await supabase
+        .from('companies')
+        .insert([{
+          name: formData.name,
+          address: formData.address,
+          phone: formData.phone,
+          email: formData.email,
+          gstin: formData.gstin,
+          jurisdiction_city: formData.jurisdiction_city,
+          logo_url: formData.logo_url,
+          signature_url: formData.signature_url
+        }])
+        .select()
+        .single();
 
-      const { error } = await supabase
-        .from('business_profiles')
-        .upsert(payload, { onConflict: 'user_id' });
+      if (companyErr) throw companyErr;
 
-      if (error) throw error;
+      // 2. Insert into company_users mapping
+      const { error: mappingErr } = await supabase
+        .from('company_users')
+        .insert([{
+          company_id: company.id,
+          user_id: user.id,
+          role: 'Admin'
+        }]);
 
-      setBusinessData(payload);
-      setIsProfileSetupComplete(true);
+      if (mappingErr) throw mappingErr;
+
+      toast.success('Company profile created!');
+      setBusinessData(company);
     } catch (err) {
       console.error('Error saving profile:', err);
-      alert('Failed to save profile. Check connection or RLS policies.');
+      toast.error('Failed to save profile. Check connection or RLS policies.');
     } finally {
       setLoading(false);
     }
   };
 
-  if (fetching) {
-    return (
-      <div style={{ display: 'flex', height: '100vh', justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f172a', color: 'white' }}>
-        Loading your profile data...
-      </div>
-    );
-  }
-
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '2rem' }}>
-      <div className="glass-panel" style={{ width: '100%', maxWidth: '600px', padding: '2rem' }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div className="logo-icon" style={{ display: 'inline-flex', marginBottom: '1rem' }}>
+    <div className="flex justify-center items-center h-full w-full" style={{ minHeight: '100vh', padding: '2rem', backgroundColor: 'var(--bg-body)' }}>
+      <div className="card" style={{ width: '100%', maxWidth: '600px' }}>
+        <div className="text-center mb-6">
+          <div className="btn-icon" style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent-primary)', marginBottom: '1rem', padding: '1rem' }}>
             <Building2 size={32} />
           </div>
-          <h2>Business Profile Setup</h2>
-          <p style={{ color: 'var(--text-secondary)' }}>Set up your transporter details. This will be automatically filled on all receipts.</p>
+          <h2 className="text-2xl">Company Profile Setup</h2>
+          <p className="text-muted mt-2">Set up your transporter details to proceed.</p>
         </div>
 
         <form onSubmit={handleSave}>
           <div className="form-group">
-            <label>Business Name (e.g., Krishna Transport)</label>
+            <label>Company Name (e.g., Krishna Transport)</label>
             <input 
               type="text" 
               required
@@ -122,23 +104,18 @@ export default function ProfileSetup({ setBusinessData, setIsProfileSetupComplet
             />
           </div>
 
-          <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>Business Logo</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div className="form-row">
+            <div className="form-group">
+              <label>Company Logo</label>
+              <div className="flex items-center gap-4">
                 <label className="btn btn-secondary" style={{ cursor: 'pointer', margin: 0 }}>
-                  <Upload size={16} /> {formData.logo ? 'Change Logo' : 'Upload Logo'}
+                  <Upload size={16} /> {formData.logo_url ? 'Change Logo' : 'Upload Logo'}
                   <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} />
                 </label>
-                {formData.logo && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <img src={formData.logo} alt="Preview" style={{ height: '40px', borderRadius: '4px' }} />
-                    <button 
-                      type="button"
-                      className="btn btn-danger" 
-                      onClick={() => setFormData({...formData, logo: null})}
-                      style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
-                    >
+                {formData.logo_url && (
+                  <div className="flex items-center gap-2">
+                    <img src={formData.logo_url} alt="Preview" style={{ height: '40px', borderRadius: '4px' }} />
+                    <button type="button" className="btn btn-danger btn-icon" onClick={() => setFormData({...formData, logo_url: null})}>
                       Remove
                     </button>
                   </div>
@@ -146,22 +123,17 @@ export default function ProfileSetup({ setBusinessData, setIsProfileSetupComplet
               </div>
             </div>
 
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>Authorized Signature (Transparent PNG recommended)</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div className="form-group">
+              <label>Authorized Sign (Transparent PNG)</label>
+              <div className="flex items-center gap-4">
                 <label className="btn btn-secondary" style={{ cursor: 'pointer', margin: 0 }}>
-                  <Upload size={16} /> {formData.signature ? 'Change Sign' : 'Upload Sign'}
+                  <Upload size={16} /> {formData.signature_url ? 'Change Sign' : 'Upload Sign'}
                   <input type="file" accept="image/*" onChange={handleSignatureUpload} style={{ display: 'none' }} />
                 </label>
-                {formData.signature && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <img src={formData.signature} alt="Preview" style={{ height: '40px', borderRadius: '4px' }} />
-                    <button 
-                      type="button"
-                      className="btn btn-danger" 
-                      onClick={() => setFormData({...formData, signature: null})}
-                      style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
-                    >
+                {formData.signature_url && (
+                  <div className="flex items-center gap-2">
+                    <img src={formData.signature_url} alt="Preview" style={{ height: '40px', borderRadius: '4px' }} />
+                    <button type="button" className="btn btn-danger btn-icon" onClick={() => setFormData({...formData, signature_url: null})}>
                       Remove
                     </button>
                   </div>
@@ -209,8 +181,8 @@ export default function ProfileSetup({ setBusinessData, setIsProfileSetupComplet
                 onChange={(e) => setFormData({...formData, gstin: e.target.value})} 
               />
             </div>
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>JURISDICTION CITY</label>
+            <div className="form-group">
+              <label>Jurisdiction City</label>
               <input 
                 type="text" 
                 required
@@ -223,11 +195,11 @@ export default function ProfileSetup({ setBusinessData, setIsProfileSetupComplet
           
           <button 
             type="submit" 
-            className="btn btn-primary" 
-            style={{ width: '100%', padding: '16px', fontSize: '1.1rem', display: 'flex', justifyContent: 'center', gap: '8px' }}
+            className="btn btn-primary w-full mt-4" 
+            style={{ padding: '0.75rem', fontSize: '1rem' }}
             disabled={loading}
           >
-            {loading ? <Loader2 size={24} className="spinner" /> : <><Save size={24} /> Save & Continue</>}
+            {loading ? <Loader2 size={20} className="spin" /> : <><Save size={20} /> Create Company</>}
           </button>
         </form>
       </div>
