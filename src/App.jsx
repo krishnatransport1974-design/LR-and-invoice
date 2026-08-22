@@ -30,7 +30,9 @@ function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session) {
-        checkBusinessProfile(session.user.id);
+        if (_event === 'SIGNED_IN') {
+          checkBusinessProfile(session.user.id);
+        }
       } else {
         setBusinessData(null);
         setIsCheckingProfile(false);
