@@ -175,7 +175,7 @@ export default function InvoiceList() {
             }}>
               <ArrowLeft size={16} /> Back
             </button>
-            <h2 className="text-lg">Invoice Editor: {invoiceData.invoiceNumber}</h2>
+            <h2 className="text-lg">Invoice Editor: {invoiceData.invoiceNumber} <span style={{fontSize: '0.7rem', color: 'var(--success)', marginLeft: '10px', fontWeight: 'normal'}}>✓ Draft Auto-Saved</span></h2>
           </div>
           <div className="flex items-center gap-2">
             <button className="btn btn-primary" onClick={generatePDF}>

@@ -153,7 +153,7 @@ export default function LRList() {
             }}>
               <ArrowLeft size={16} /> Back
             </button>
-            <h2 className="text-lg">LR Editor: {lrData.lrNumber}</h2>
+            <h2 className="text-lg">LR Editor: {lrData.lrNumber} <span style={{fontSize: '0.7rem', color: 'var(--success)', marginLeft: '10px', fontWeight: 'normal'}}>✓ Draft Auto-Saved</span></h2>
           </div>
           <div className="flex items-center gap-2">
             {lrData.id && (
