@@ -31,19 +31,24 @@ ALTER TABLE public.companies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.company_users ENABLE ROW LEVEL SECURITY;
 
 -- Company RLS: Users can only view/edit their own company
+DROP POLICY IF EXISTS "Users can view their own company" ON public.companies;
 CREATE POLICY "Users can view their own company" ON public.companies
 FOR SELECT USING (id IN (SELECT company_id FROM public.company_users WHERE user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Users can update their own company" ON public.companies;
 CREATE POLICY "Users can update their own company" ON public.companies
 FOR UPDATE USING (id IN (SELECT company_id FROM public.company_users WHERE user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Users can create companies" ON public.companies;
 CREATE POLICY "Users can create companies" ON public.companies
 FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 
 -- Company Users RLS
+DROP POLICY IF EXISTS "Users can view users in their company" ON public.company_users;
 CREATE POLICY "Users can view users in their company" ON public.company_users
 FOR SELECT USING (company_id IN (SELECT company_id FROM public.company_users WHERE user_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Users can insert mapping for themselves" ON public.company_users;
 CREATE POLICY "Users can insert mapping for themselves" ON public.company_users
 FOR INSERT WITH CHECK (user_id = auth.uid());
 
@@ -62,6 +67,7 @@ CREATE TABLE IF NOT EXISTS public.customers (
 );
 
 ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Strict company isolation for customers" ON public.customers;
 CREATE POLICY "Strict company isolation for customers" ON public.customers
 FOR ALL USING (company_id IN (SELECT company_id FROM public.company_users WHERE user_id = auth.uid()));
 
@@ -79,6 +85,7 @@ CREATE TABLE IF NOT EXISTS public.vehicles (
 );
 
 ALTER TABLE public.vehicles ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Strict company isolation for vehicles" ON public.vehicles;
 CREATE POLICY "Strict company isolation for vehicles" ON public.vehicles
 FOR ALL USING (company_id IN (SELECT company_id FROM public.company_users WHERE user_id = auth.uid()));
 
@@ -94,6 +101,7 @@ ADD COLUMN IF NOT EXISTS format TEXT DEFAULT 'standard',
 ADD COLUMN IF NOT EXISTS pdf_url TEXT;
 
 ALTER TABLE public.lorry_receipts ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Strict company isolation for lorry_receipts" ON public.lorry_receipts;
 CREATE POLICY "Strict company isolation for lorry_receipts" ON public.lorry_receipts
 FOR ALL USING (company_id IN (SELECT company_id FROM public.company_users WHERE user_id = auth.uid()));
 
@@ -122,6 +130,7 @@ CREATE TABLE IF NOT EXISTS public.invoices (
 );
 
 ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Strict company isolation for invoices" ON public.invoices;
 CREATE POLICY "Strict company isolation for invoices" ON public.invoices
 FOR ALL USING (company_id IN (SELECT company_id FROM public.company_users WHERE user_id = auth.uid()));
 
@@ -192,6 +201,7 @@ FOR EACH ROW EXECUTE FUNCTION public.set_invoice_number();
 -- NOTE: Supabase Storage requires creation of buckets manually or via API, but we define policies here.
 -- Assuming bucket 'documents' exists:
 -- INSERT INTO storage.buckets (id, name) VALUES ('documents', 'documents');
+DROP POLICY IF EXISTS "Company isolation for storage" ON storage.objects;
 CREATE POLICY "Company isolation for storage" ON storage.objects
 FOR ALL USING (
     bucket_id = 'documents' AND 

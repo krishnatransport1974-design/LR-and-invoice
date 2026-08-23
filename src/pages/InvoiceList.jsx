@@ -13,22 +13,37 @@ export default function InvoiceList() {
   const [search, setSearch] = useState('');
   
   // Editor State
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(() => {
+    return localStorage.getItem('inv_isEditing') === 'true';
+  });
   const { businessData } = useOutletContext();
   const location = useLocation();
   
-  const [invoiceData, setInvoiceData] = useState({
-    invoiceNumber: '',
-    date: new Date().toISOString().split('T')[0],
-    dueDate: '',
-    customer_id: null,
-    clientName: '',
-    clientAddress: '',
-    items: [{ id: Date.now(), description: '', quantity: 1, price: 0 }],
-    taxRate: 18,
-    notes: '',
-    lr_id: null
+  const [invoiceData, setInvoiceData] = useState(() => {
+    const saved = localStorage.getItem('inv_draft');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return {
+      invoiceNumber: '',
+      date: new Date().toISOString().split('T')[0],
+      dueDate: '',
+      customer_id: null,
+      clientName: '',
+      clientAddress: '',
+      items: [{ id: Date.now(), description: '', quantity: 1, price: 0 }],
+      taxRate: 18,
+      notes: '',
+      lr_id: null
+    };
   });
+
+  useEffect(() => {
+    localStorage.setItem('inv_isEditing', isEditing);
+    if (isEditing) {
+      localStorage.setItem('inv_draft', JSON.stringify(invoiceData));
+    }
+  }, [isEditing, invoiceData]);
 
   const fetchInvoices = async () => {
     try {
@@ -153,7 +168,11 @@ export default function InvoiceList() {
         {/* Editor Header */}
         <div className="flex items-center justify-between p-4 bg-white border-b sticky top-0 z-10 shadow-sm" style={{ borderColor: 'var(--border-color)' }}>
           <div className="flex items-center gap-4">
-            <button className="btn btn-secondary" onClick={() => setIsEditing(false)}>
+            <button className="btn btn-secondary" onClick={() => {
+              setIsEditing(false);
+              localStorage.removeItem('inv_draft');
+              localStorage.removeItem('inv_isEditing');
+            }}>
               <ArrowLeft size={16} /> Back
             </button>
             <h2 className="text-lg">Invoice Editor: {invoiceData.invoiceNumber}</h2>

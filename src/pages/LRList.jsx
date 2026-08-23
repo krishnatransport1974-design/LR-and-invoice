@@ -13,22 +13,37 @@ export default function LRList() {
   const [search, setSearch] = useState('');
   
   // Editor State
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(() => {
+    return localStorage.getItem('lr_isEditing') === 'true';
+  });
   const { businessData } = useOutletContext();
   const navigate = useNavigate();
   
-  const [lrData, setLrData] = useState({
-    lrNumber: '',
-    date: new Date().toISOString().split('T')[0],
-    invNo: '',
-    from: '',
-    to: '',
-    consignorName: '',
-    consignorAddress: '',
-    consigneeName: '',
-    consigneeAddress: '',
-    goods: [{ id: Date.now(), packages: '', description: '', lorryNo: '', product: '', weight: '', remarks: '' }]
+  const [lrData, setLrData] = useState(() => {
+    const saved = localStorage.getItem('lr_draft');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return {
+      lrNumber: '',
+      date: new Date().toISOString().split('T')[0],
+      invNo: '',
+      from: '',
+      to: '',
+      consignorName: '',
+      consignorAddress: '',
+      consigneeName: '',
+      consigneeAddress: '',
+      goods: [{ id: Date.now(), packages: '', description: '', lorryNo: '', product: '', weight: '', remarks: '' }]
+    };
   });
+
+  useEffect(() => {
+    localStorage.setItem('lr_isEditing', isEditing);
+    if (isEditing) {
+      localStorage.setItem('lr_draft', JSON.stringify(lrData));
+    }
+  }, [isEditing, lrData]);
 
   const fetchLRs = async () => {
     try {
@@ -131,7 +146,11 @@ export default function LRList() {
         {/* Editor Header */}
         <div className="flex items-center justify-between p-4 bg-white border-b sticky top-0 z-10 shadow-sm" style={{ borderColor: 'var(--border-color)' }}>
           <div className="flex items-center gap-4">
-            <button className="btn btn-secondary" onClick={() => setIsEditing(false)}>
+            <button className="btn btn-secondary" onClick={() => {
+              setIsEditing(false);
+              localStorage.removeItem('lr_draft');
+              localStorage.removeItem('lr_isEditing');
+            }}>
               <ArrowLeft size={16} /> Back
             </button>
             <h2 className="text-lg">LR Editor: {lrData.lrNumber}</h2>
