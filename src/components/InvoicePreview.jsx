@@ -1,7 +1,8 @@
 import React from 'react';
 
 export default function InvoicePreview({ businessData, invoiceData }) {
-  const isModern = businessData?.default_invoice_format === 'modern';
+  const formatToUse = invoiceData?.format || businessData?.default_invoice_format || 'standard';
+  const isModern = formatToUse === 'modern';
   
   const primaryColor = isModern ? '#0f172a' : '#1e293b'; 
   const accentColor = isModern ? '#2563eb' : '#3b82f6';

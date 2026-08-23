@@ -12,6 +12,8 @@ export default function Dashboard() {
     vehicles: 0,
     pendingAmount: 0
   });
+  const [recentLRs, setRecentLRs] = useState([]);
+  const [recentInvoices, setRecentInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,11 +21,13 @@ export default function Dashboard() {
       if (!businessData?.id) return;
       try {
         setLoading(true);
-        const [lrRes, invRes, custRes, vehRes] = await Promise.all([
+        const [lrRes, invRes, custRes, vehRes, recentLrRes, recentInvRes] = await Promise.all([
           supabase.from('lorry_receipts').select('id', { count: 'exact' }),
           supabase.from('invoices').select('total, status'),
           supabase.from('customers').select('id', { count: 'exact' }),
-          supabase.from('vehicles').select('id', { count: 'exact' })
+          supabase.from('vehicles').select('id', { count: 'exact' }),
+          supabase.from('lorry_receipts').select('id, lr_number, date, consignor_name, from_city, to_city, status').order('created_at', { ascending: false }).limit(5),
+          supabase.from('invoices').select('id, invoice_number, date, client_name, total, status').order('created_at', { ascending: false }).limit(5)
         ]);
 
         const totalInvoices = invRes.data?.length || 0;
@@ -36,6 +40,9 @@ export default function Dashboard() {
           vehicles: vehRes.count || 0,
           pendingAmount
         });
+        
+        if (recentLrRes.data) setRecentLRs(recentLrRes.data);
+        if (recentInvRes.data) setRecentInvoices(recentInvRes.data);
       } catch (err) {
         console.error("Error fetching stats:", err);
       } finally {
@@ -113,7 +120,7 @@ export default function Dashboard() {
 
       {/* Quick Actions */}
       <div>
-        <h3 className="mb-4">Quick Actions</h3>
+        <h3 className="mb-4 text-xl">Quick Actions</h3>
         <div className="flex gap-4 flex-wrap">
           <Link to="/lrs" className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem' }}>
             <FileText size={18} /> Create LR
@@ -126,6 +133,80 @@ export default function Dashboard() {
           </Link>
         </div>
       </div>
+
+      {/* Recent Activity Tables */}
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem', marginTop: '1rem' }}>
+        
+        {/* Recent LRs */}
+        <div className="card" style={{ padding: '0' }}>
+          <div style={{ padding: '1.25rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 className="text-lg">Recent LRs</h3>
+            <Link to="/lrs" className="text-sm font-bold" style={{ color: 'var(--accent-primary)', textDecoration: 'none' }}>View All</Link>
+          </div>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>LR No.</th>
+                <th>Date</th>
+                <th>Consignor</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentLRs.length === 0 ? (
+                <tr><td colSpan="4" className="text-center text-muted py-4">No recent LRs</td></tr>
+              ) : (
+                recentLRs.map(lr => (
+                  <tr key={lr.id}>
+                    <td className="font-bold" style={{ color: 'var(--accent-primary)' }}>{lr.lr_number}</td>
+                    <td>{lr.date}</td>
+                    <td>{lr.consignor_name || '-'}</td>
+                    <td>
+                      <span className={`badge ${lr.status === 'Billed' ? 'badge-success' : 'badge-default'}`}>
+                        {lr.status || 'Booked'}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Recent Invoices */}
+        <div className="card" style={{ padding: '0' }}>
+          <div style={{ padding: '1.25rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 className="text-lg">Recent Invoices</h3>
+            <Link to="/invoices" className="text-sm font-bold" style={{ color: 'var(--accent-primary)', textDecoration: 'none' }}>View All</Link>
+          </div>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Inv No.</th>
+                <th>Date</th>
+                <th>Client</th>
+                <th className="text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentInvoices.length === 0 ? (
+                <tr><td colSpan="4" className="text-center text-muted py-4">No recent Invoices</td></tr>
+              ) : (
+                recentInvoices.map(inv => (
+                  <tr key={inv.id}>
+                    <td className="font-bold" style={{ color: 'var(--accent-primary)' }}>{inv.invoice_number}</td>
+                    <td>{inv.date}</td>
+                    <td>{inv.client_name || '-'}</td>
+                    <td className="text-right font-bold">₹{Number(inv.total).toFixed(2)}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
     </div>
   );
 }

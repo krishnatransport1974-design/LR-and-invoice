@@ -4,7 +4,7 @@ import { Loader2, Plus, Search, FileText, Printer, FileDown, ArrowLeft } from 'l
 import toast from 'react-hot-toast';
 import LRForm from '../components/LRForm';
 import LRPreview from '../components/LRPreview';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import html2pdf from 'html2pdf.js';
 
 export default function LRList() {
@@ -15,6 +15,7 @@ export default function LRList() {
   // Editor State
   const [isEditing, setIsEditing] = useState(false);
   const { businessData } = useOutletContext();
+  const navigate = useNavigate();
   
   const [lrData, setLrData] = useState({
     lrNumber: '',
@@ -81,6 +82,7 @@ export default function LRList() {
 
   const handleView = (lr) => {
     setLrData({
+      id: lr.id,
       lrNumber: lr.lr_number,
       date: lr.date,
       invNo: lr.inv_no,
@@ -135,6 +137,15 @@ export default function LRList() {
             <h2 className="text-lg">LR Editor: {lrData.lrNumber}</h2>
           </div>
           <div className="flex items-center gap-2">
+            {lrData.id && (
+              <button 
+                className="btn btn-secondary" 
+                onClick={() => navigate('/invoices', { state: { sourceLr: lrData } })}
+                style={{ color: 'var(--success)' }}
+              >
+                <FileText size={16} /> Generate Invoice
+              </button>
+            )}
             <button className="btn btn-primary" onClick={generatePDF}>
               <FileDown size={16} /> Download PDF
             </button>

@@ -1,8 +1,9 @@
 import React from 'react';
 
 const SingleLR = ({ businessData, lrData, copyType, bgColor }) => {
-  const isCompact = businessData?.default_lr_format === 'compact';
-  const isModern = businessData?.default_lr_format === 'modern';
+  const formatToUse = lrData?.format || businessData?.default_lr_format || 'standard';
+  const isCompact = formatToUse === 'compact';
+  const isModern = formatToUse === 'modern';
   
   const primaryColor = isModern ? '#0f172a' : '#1e293b'; 
   const accentColor = isModern ? '#2563eb' : '#3b82f6';

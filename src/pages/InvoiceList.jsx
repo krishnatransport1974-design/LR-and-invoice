@@ -4,7 +4,7 @@ import { Loader2, Plus, Search, FileText, Printer, FileDown, ArrowLeft } from 'l
 import toast from 'react-hot-toast';
 import InvoiceForm from '../components/InvoiceForm';
 import InvoicePreview from '../components/InvoicePreview';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useLocation } from 'react-router-dom';
 import html2pdf from 'html2pdf.js';
 
 export default function InvoiceList() {
@@ -15,6 +15,7 @@ export default function InvoiceList() {
   // Editor State
   const [isEditing, setIsEditing] = useState(false);
   const { businessData } = useOutletContext();
+  const location = useLocation();
   
   const [invoiceData, setInvoiceData] = useState({
     invoiceNumber: '',
@@ -49,6 +50,34 @@ export default function InvoiceList() {
   useEffect(() => {
     if (!isEditing) fetchInvoices();
   }, [isEditing]);
+
+  useEffect(() => {
+    if (location.state?.sourceLr) {
+      const lr = location.state.sourceLr;
+      // Generate initial invoice data from LR
+      setInvoiceData({
+        invoiceNumber: '', // Let auto-increment handle this on save, or frontend placeholder
+        date: new Date().toISOString().split('T')[0],
+        dueDate: '',
+        customer_id: lr.customer_id,
+        clientName: lr.consignorName || lr.consigneeName || '',
+        clientAddress: lr.consignorAddress || lr.consigneeAddress || '',
+        items: [{ 
+          id: Date.now(), 
+          description: `Freight Charges for LR No. ${lr.lrNumber} from ${lr.from} to ${lr.to}`, 
+          quantity: 1, 
+          price: lr.freight || 0 
+        }],
+        taxRate: 18,
+        notes: `Reference LR: ${lr.lrNumber}`,
+        lr_id: lr.id
+      });
+      setIsEditing(true);
+      
+      // Clear history state to avoid triggering again on reload
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const handleCreateNew = () => {
     // Generate next Invoice number based on history

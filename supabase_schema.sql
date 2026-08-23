@@ -89,7 +89,9 @@ ALTER TABLE public.lorry_receipts
 ADD COLUMN IF NOT EXISTS company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE,
 ADD COLUMN IF NOT EXISTS customer_id UUID REFERENCES public.customers(id) ON DELETE SET NULL,
 ADD COLUMN IF NOT EXISTS vehicle_id UUID REFERENCES public.vehicles(id) ON DELETE SET NULL,
-ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'Booked';
+ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'Booked',
+ADD COLUMN IF NOT EXISTS format TEXT DEFAULT 'standard',
+ADD COLUMN IF NOT EXISTS pdf_url TEXT;
 
 ALTER TABLE public.lorry_receipts ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Strict company isolation for lorry_receipts" ON public.lorry_receipts
@@ -114,9 +116,84 @@ CREATE TABLE IF NOT EXISTS public.invoices (
     status TEXT DEFAULT 'Pending',
     items JSONB NOT NULL DEFAULT '[]'::jsonb,
     lr_id UUID REFERENCES public.lorry_receipts(id) ON DELETE SET NULL,
+    format TEXT DEFAULT 'standard',
+    pdf_url TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Strict company isolation for invoices" ON public.invoices
 FOR ALL USING (company_id IN (SELECT company_id FROM public.company_users WHERE user_id = auth.uid()));
+
+-- 7. Document Auto-Numbering Functions
+CREATE OR REPLACE FUNCTION public.generate_document_number(p_company_id UUID, p_doc_type TEXT)
+RETURNS TEXT AS $$
+DECLARE
+    next_num INT;
+    prefix TEXT;
+    year_prefix TEXT;
+    result TEXT;
+BEGIN
+    year_prefix := TO_CHAR(CURRENT_DATE, 'YYYY');
+    
+    IF p_doc_type = 'LR' THEN
+        prefix := 'LR-' || year_prefix || '-';
+        SELECT COALESCE(MAX(CAST(NULLIF(REGEXP_REPLACE(lr_number, '\D', '', 'g'), '') AS INT)), 0) + 1
+        INTO next_num
+        FROM public.lorry_receipts
+        WHERE company_id = p_company_id AND lr_number LIKE prefix || '%';
+        
+    ELSIF p_doc_type = 'INV' THEN
+        prefix := 'INV-' || year_prefix || '-';
+        SELECT COALESCE(MAX(CAST(NULLIF(REGEXP_REPLACE(invoice_number, '\D', '', 'g'), '') AS INT)), 0) + 1
+        INTO next_num
+        FROM public.invoices
+        WHERE company_id = p_company_id AND invoice_number LIKE prefix || '%';
+    END IF;
+
+    result := prefix || LPAD(next_num::TEXT, 5, '0');
+    RETURN result;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger for Lorry Receipts
+CREATE OR REPLACE FUNCTION public.set_lr_number()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.lr_number IS NULL OR NEW.lr_number = '' OR NEW.lr_number LIKE 'LR-00%' THEN
+        NEW.lr_number := public.generate_document_number(NEW.company_id, 'LR');
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trigger_set_lr_number ON public.lorry_receipts;
+CREATE TRIGGER trigger_set_lr_number
+BEFORE INSERT ON public.lorry_receipts
+FOR EACH ROW EXECUTE FUNCTION public.set_lr_number();
+
+-- Trigger for Invoices
+CREATE OR REPLACE FUNCTION public.set_invoice_number()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.invoice_number IS NULL OR NEW.invoice_number = '' OR NEW.invoice_number LIKE 'INV-00%' THEN
+        NEW.invoice_number := public.generate_document_number(NEW.company_id, 'INV');
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trigger_set_invoice_number ON public.invoices;
+CREATE TRIGGER trigger_set_invoice_number
+BEFORE INSERT ON public.invoices
+FOR EACH ROW EXECUTE FUNCTION public.set_invoice_number();
+
+-- 8. Storage Buckets and Policies
+-- NOTE: Supabase Storage requires creation of buckets manually or via API, but we define policies here.
+-- Assuming bucket 'documents' exists:
+-- INSERT INTO storage.buckets (id, name) VALUES ('documents', 'documents');
+CREATE POLICY "Company isolation for storage" ON storage.objects
+FOR ALL USING (
+    bucket_id = 'documents' AND 
+    (auth.uid() IN (SELECT user_id FROM public.company_users))
+);
