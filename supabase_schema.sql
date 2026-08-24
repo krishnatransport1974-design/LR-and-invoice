@@ -11,6 +11,15 @@ CREATE TABLE IF NOT EXISTS public.companies (
     jurisdiction_city TEXT,
     logo_url TEXT,
     signature_url TEXT,
+    bank_name TEXT,
+    account_name TEXT,
+    account_number TEXT,
+    ifsc TEXT,
+    upi_id TEXT,
+    show_bank_details BOOLEAN DEFAULT true,
+    default_tax DECIMAL(5,2) DEFAULT 0,
+    default_payment_terms TEXT,
+    invoice_prefix TEXT DEFAULT 'INV',
     default_lr_format TEXT DEFAULT 'standard',
     default_invoice_format TEXT DEFAULT 'standard',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -90,7 +99,27 @@ CREATE POLICY "Strict company isolation for vehicles" ON public.vehicles
 FOR ALL USING (company_id IN (SELECT company_id FROM public.company_users WHERE user_id = auth.uid()));
 
 
--- 5. Modify Lorry Receipts Table
+-- 5. Create Products Table
+CREATE TABLE IF NOT EXISTS public.products (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    sku TEXT,
+    hsn_sac TEXT,
+    unit TEXT DEFAULT 'PCS',
+    default_rate DECIMAL(12,2) DEFAULT 0,
+    tax_rate DECIMAL(5,2) DEFAULT 0,
+    description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Strict company isolation for products" ON public.products;
+CREATE POLICY "Strict company isolation for products" ON public.products
+FOR ALL USING (company_id IN (SELECT company_id FROM public.company_users WHERE user_id = auth.uid()));
+
+
+-- 6. Modify Lorry Receipts Table
 -- We will migrate user_id to company_id if needed, but for now we define the new schema
 ALTER TABLE public.lorry_receipts 
 ADD COLUMN IF NOT EXISTS company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE,
@@ -106,7 +135,7 @@ CREATE POLICY "Strict company isolation for lorry_receipts" ON public.lorry_rece
 FOR ALL USING (company_id IN (SELECT company_id FROM public.company_users WHERE user_id = auth.uid()));
 
 
--- 6. Create Invoices Table
+-- 7. Create Invoices Table
 CREATE TABLE IF NOT EXISTS public.invoices (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE,
@@ -117,10 +146,22 @@ CREATE TABLE IF NOT EXISTS public.invoices (
     client_name TEXT NOT NULL,
     client_address TEXT,
     subtotal DECIMAL(12,2) DEFAULT 0,
+    discount DECIMAL(12,2) DEFAULT 0,
+    taxable_amount DECIMAL(12,2) DEFAULT 0,
     tax_rate DECIMAL(5,2) DEFAULT 0,
     tax_amount DECIMAL(12,2) DEFAULT 0,
+    cgst DECIMAL(12,2) DEFAULT 0,
+    sgst DECIMAL(12,2) DEFAULT 0,
+    igst DECIMAL(12,2) DEFAULT 0,
+    round_off DECIMAL(12,2) DEFAULT 0,
     total DECIMAL(12,2) DEFAULT 0,
+    amount_paid DECIMAL(12,2) DEFAULT 0,
+    balance_due DECIMAL(12,2) DEFAULT 0,
+    payment_status TEXT DEFAULT 'Unpaid',
+    payment_mode TEXT,
     notes TEXT,
+    terms TEXT,
+    invoice_type TEXT DEFAULT 'Standard Invoice',
     status TEXT DEFAULT 'Pending',
     items JSONB NOT NULL DEFAULT '[]'::jsonb,
     lr_id UUID REFERENCES public.lorry_receipts(id) ON DELETE SET NULL,
@@ -134,7 +175,7 @@ DROP POLICY IF EXISTS "Strict company isolation for invoices" ON public.invoices
 CREATE POLICY "Strict company isolation for invoices" ON public.invoices
 FOR ALL USING (company_id IN (SELECT company_id FROM public.company_users WHERE user_id = auth.uid()));
 
--- 7. Document Auto-Numbering Functions
+-- 8. Document Auto-Numbering Functions
 CREATE OR REPLACE FUNCTION public.generate_document_number(p_company_id UUID, p_doc_type TEXT)
 RETURNS TEXT AS $$
 DECLARE
@@ -153,7 +194,8 @@ BEGIN
         WHERE company_id = p_company_id AND lr_number LIKE prefix || '%';
         
     ELSIF p_doc_type = 'INV' THEN
-        prefix := 'INV-' || year_prefix || '-';
+        SELECT COALESCE(invoice_prefix, 'INV') INTO prefix FROM public.companies WHERE id = p_company_id;
+        prefix := prefix || '-' || year_prefix || '-';
         SELECT COALESCE(MAX(CAST(NULLIF(REGEXP_REPLACE(invoice_number, '\D', '', 'g'), '') AS INT)), 0) + 1
         INTO next_num
         FROM public.invoices
@@ -197,7 +239,7 @@ CREATE TRIGGER trigger_set_invoice_number
 BEFORE INSERT ON public.invoices
 FOR EACH ROW EXECUTE FUNCTION public.set_invoice_number();
 
--- 8. Storage Buckets and Policies
+-- 9. Storage Buckets and Policies
 -- NOTE: Supabase Storage requires creation of buckets manually or via API, but we define policies here.
 -- Assuming bucket 'documents' exists:
 -- INSERT INTO storage.buckets (id, name) VALUES ('documents', 'documents');

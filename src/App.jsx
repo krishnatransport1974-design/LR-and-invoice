@@ -13,6 +13,7 @@ import LRList from './pages/LRList';
 import InvoiceList from './pages/InvoiceList';
 import Customers from './pages/Customers';
 import Vehicles from './pages/Vehicles';
+import Products from './pages/Products';
 import Settings from './pages/Settings';
 
 function App() {
@@ -111,6 +112,7 @@ function App() {
           <Route path="invoices" element={<InvoiceList />} />
           <Route path="customers" element={<Customers />} />
           <Route path="vehicles" element={<Vehicles />} />
+          <Route path="products" element={<Products />} />
           <Route path="settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

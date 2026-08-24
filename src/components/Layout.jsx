@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Truck, FileText, Users, Settings, LogOut, LayoutDashboard } from 'lucide-react';
+import { Truck, FileText, Users, Settings, LogOut, LayoutDashboard, Package } from 'lucide-react';
 import { supabase } from '../supabase';
 import toast from 'react-hot-toast';
 
@@ -45,6 +45,9 @@ export default function Layout({ businessData, setBusinessData }) {
           </NavLink>
           <NavLink to="/vehicles" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <Truck size={18} /> Vehicles
+          </NavLink>
+          <NavLink to="/products" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <Package size={18} /> Products
           </NavLink>
         </nav>
 

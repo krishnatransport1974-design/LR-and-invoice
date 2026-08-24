@@ -10,7 +10,10 @@ export default function Dashboard() {
     invoices: 0,
     customers: 0,
     vehicles: 0,
-    pendingAmount: 0
+    pendingAmount: 0,
+    paidAmount: 0,
+    paidCount: 0,
+    pendingCount: 0
   });
   const [recentLRs, setRecentLRs] = useState([]);
   const [recentInvoices, setRecentInvoices] = useState([]);
@@ -27,18 +30,36 @@ export default function Dashboard() {
           supabase.from('customers').select('id', { count: 'exact' }),
           supabase.from('vehicles').select('id', { count: 'exact' }),
           supabase.from('lorry_receipts').select('id, lr_number, date, consignor_name, from_city, to_city, status').order('created_at', { ascending: false }).limit(5),
-          supabase.from('invoices').select('id, invoice_number, date, client_name, total, status').order('created_at', { ascending: false }).limit(5)
+          supabase.from('invoices').select('id, invoice_number, date, client_name, total, payment_status').order('created_at', { ascending: false }).limit(5)
         ]);
 
-        const totalInvoices = invRes.data?.length || 0;
-        const pendingAmount = invRes.data?.filter(i => i.status !== 'Paid').reduce((sum, i) => sum + Number(i.total), 0) || 0;
+        const allInvoices = invRes.data || [];
+        const totalInvoices = allInvoices.length;
+        
+        let pendingAmount = 0;
+        let paidAmount = 0;
+        let pendingCount = 0;
+        let paidCount = 0;
+        
+        allInvoices.forEach(inv => {
+          if (inv.payment_status === 'Paid') {
+            paidAmount += Number(inv.total);
+            paidCount++;
+          } else {
+            pendingAmount += Number(inv.total);
+            pendingCount++;
+          }
+        });
 
         setStats({
           lrs: lrRes.count || 0,
           invoices: totalInvoices,
           customers: custRes.count || 0,
           vehicles: vehRes.count || 0,
-          pendingAmount
+          pendingAmount,
+          paidAmount,
+          paidCount,
+          pendingCount
         });
         
         if (recentLrRes.data) setRecentLRs(recentLrRes.data);
@@ -87,17 +108,27 @@ export default function Dashboard() {
         </div>
 
         <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem' }}>
-          <div className="btn-icon" style={{ backgroundColor: '#fee2e2', color: '#ef4444', width: '50px', height: '50px' }}>
+          <div className="btn-icon" style={{ backgroundColor: '#fef3c7', color: '#d97706', width: '50px', height: '50px' }}>
             <DollarSign size={24} />
           </div>
           <div>
-            <div className="text-muted text-sm font-bold text-uppercase">Pending Payments</div>
-            <div className="text-2xl font-bold mt-1 text-danger">₹{stats.pendingAmount.toFixed(2)}</div>
+            <div className="text-muted text-sm font-bold text-uppercase">Total Pending ({stats.pendingCount})</div>
+            <div className="text-2xl font-bold mt-1 text-amber-600">₹{stats.pendingAmount.toFixed(2)}</div>
           </div>
         </div>
 
         <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem' }}>
           <div className="btn-icon" style={{ backgroundColor: '#dcfce7', color: '#16a34a', width: '50px', height: '50px' }}>
+            <DollarSign size={24} />
+          </div>
+          <div>
+            <div className="text-muted text-sm font-bold text-uppercase">Total Paid ({stats.paidCount})</div>
+            <div className="text-2xl font-bold mt-1 text-emerald-600">₹{stats.paidAmount.toFixed(2)}</div>
+          </div>
+        </div>
+        
+        <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem' }}>
+          <div className="btn-icon" style={{ backgroundColor: '#e0f2fe', color: '#0284c7', width: '50px', height: '50px' }}>
             <Users size={24} />
           </div>
           <div>
@@ -186,18 +217,24 @@ export default function Dashboard() {
                 <th>Date</th>
                 <th>Client</th>
                 <th className="text-right">Amount</th>
+                <th className="text-right">Status</th>
               </tr>
             </thead>
             <tbody>
               {recentInvoices.length === 0 ? (
-                <tr><td colSpan="4" className="text-center text-muted py-4">No recent Invoices</td></tr>
+                <tr><td colSpan="5" className="text-center text-muted py-4">No recent Invoices</td></tr>
               ) : (
                 recentInvoices.map(inv => (
                   <tr key={inv.id}>
                     <td className="font-bold" style={{ color: 'var(--accent-primary)' }}>{inv.invoice_number}</td>
-                    <td>{inv.date}</td>
-                    <td>{inv.client_name || '-'}</td>
+                    <td>{inv.date.split('-').reverse().join('/')}</td>
+                    <td className="truncate max-w-[150px]">{inv.client_name || '-'}</td>
                     <td className="text-right font-bold">₹{Number(inv.total).toFixed(2)}</td>
+                    <td className="text-right">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${inv.payment_status === 'Paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                        {inv.payment_status || 'Unpaid'}
+                      </span>
+                    </td>
                   </tr>
                 ))
               )}
