@@ -79,6 +79,19 @@ export default function InvoiceForm({ invoiceData, setInvoiceData }) {
     }));
   };
 
+  const SectionHeader = ({ title, section }) => (
+    <div 
+      className="flex justify-between items-center mb-4 pb-2 border-b cursor-pointer hover:bg-slate-50 transition-colors" 
+      style={{ borderColor: 'var(--border-color)', marginTop: '20px' }}
+      onClick={() => toggleSection(section)}
+    >
+      <div className="text-xs font-bold uppercase tracking-wider text-slate-500">{title}</div>
+      <button className="text-slate-400">
+        {expandedSections[section] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+      </button>
+    </div>
+  );
+
   const handleCustomerChange = (e) => {
     const id = e.target.value;
     const customer = customers.find(c => c.id === id);
