@@ -1,11 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
-import { Loader2, Plus, Search, FileText, Printer, FileDown, ArrowLeft, Database } from 'lucide-react';
+import { Loader2, Plus, Search, FileText, Printer, FileDown, ArrowLeft, Database, Copy, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 import InvoiceForm from '../components/InvoiceForm';
 import InvoicePreview from '../components/InvoicePreview';
 import { useOutletContext, useLocation } from 'react-router-dom';
 import html2pdf from 'html2pdf.js';
+import { calculateInvoiceTotals } from '../utils/invoiceCalculations';
 
 export default function InvoiceList() {
   const [invoices, setInvoices] = useState([]);
@@ -32,10 +33,16 @@ export default function InvoiceList() {
       customer_id: null,
       clientName: '',
       clientAddress: '',
-      items: [{ id: Date.now(), description: '', quantity: 1, price: 0 }],
-      taxRate: 18,
+      items: [{ id: Date.now(), description: '', hsn_sac: '', quantity: 1, unit: 'PCS', price: 0, discount: 0, tax_rate: businessData?.default_tax || 0 }],
+      global_discount: 0,
+      taxRate: businessData?.default_tax || 0,
+      includeTax: true,
       notes: '',
-      lr_id: null
+      terms: businessData?.default_payment_terms || '',
+      lr_id: null,
+      payment_status: 'Unpaid',
+      payment_mode: '',
+      invoice_type: 'Standard Invoice'
     };
   });
 
@@ -70,9 +77,8 @@ export default function InvoiceList() {
   useEffect(() => {
     if (location.state?.sourceLr) {
       const lr = location.state.sourceLr;
-      // Generate initial invoice data from LR
       setInvoiceData({
-        invoiceNumber: '', // Let auto-increment handle this on save, or frontend placeholder
+        invoiceNumber: '',
         date: new Date().toISOString().split('T')[0],
         dueDate: '',
         customer_id: lr.customer_id,
@@ -82,48 +88,73 @@ export default function InvoiceList() {
           id: Date.now(), 
           description: `Freight Charges for LR No. ${lr.lrNumber} from ${lr.from} to ${lr.to}`, 
           quantity: 1, 
-          price: lr.freight || 0 
+          price: lr.freight || 0,
+          unit: 'trip',
+          discount: 0,
+          tax_rate: businessData?.default_tax || 0
         }],
-        taxRate: 18,
+        global_discount: 0,
+        taxRate: businessData?.default_tax || 0,
+        includeTax: true,
         notes: `Reference LR: ${lr.lrNumber}`,
-        lr_id: lr.id
+        terms: businessData?.default_payment_terms || '',
+        lr_id: lr.id,
+        payment_status: 'Unpaid',
+        payment_mode: '',
+        invoice_type: 'Standard Invoice'
       });
       setIsEditing(true);
-      
-      // Clear history state to avoid triggering again on reload
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
 
   const handleCreateNew = () => {
-    // Generate next Invoice number based on history
-    let nextInvStr = 'INV-0001';
-    if (invoices.length > 0 && invoices[0].invoice_number) {
-      const match = invoices[0].invoice_number.match(/(\d+)$/);
-      if (match) {
-        const numPart = match[1];
-        const nextNum = parseInt(numPart, 10) + 1;
-        nextInvStr = invoices[0].invoice_number.slice(0, -numPart.length) + String(nextNum).padStart(numPart.length, '0');
-      }
-    }
-
     setInvoiceData({
-      invoiceNumber: nextInvStr,
+      invoiceNumber: '',
       date: new Date().toISOString().split('T')[0],
       dueDate: '',
       customer_id: null,
       clientName: '',
       clientAddress: '',
-      items: [{ id: Date.now(), description: '', quantity: 1, price: 0 }],
-      taxRate: 18,
-      notes: 'Thank you for your business.',
-      lr_id: null
+      items: [{ id: Date.now(), description: '', hsn_sac: '', quantity: 1, unit: 'PCS', price: 0, discount: 0, tax_rate: businessData?.default_tax || 0 }],
+      global_discount: 0,
+      taxRate: businessData?.default_tax || 0,
+      includeTax: true,
+      notes: '',
+      terms: businessData?.default_payment_terms || '',
+      lr_id: null,
+      payment_status: 'Unpaid',
+      payment_mode: '',
+      invoice_type: 'Standard Invoice'
+    });
+    setIsEditing(true);
+  };
+
+  const handleDuplicate = (inv) => {
+    setInvoiceData({
+      invoiceNumber: '',
+      date: new Date().toISOString().split('T')[0],
+      dueDate: '',
+      customer_id: inv.customer_id,
+      clientName: inv.client_name,
+      clientAddress: inv.client_address,
+      items: typeof inv.items === 'string' ? JSON.parse(inv.items) : inv.items,
+      global_discount: inv.discount || 0,
+      taxRate: inv.tax_rate,
+      includeTax: true,
+      notes: inv.notes || '',
+      terms: inv.terms || '',
+      lr_id: null,
+      payment_status: 'Unpaid',
+      payment_mode: '',
+      invoice_type: inv.invoice_type || 'Standard Invoice'
     });
     setIsEditing(true);
   };
 
   const handleView = (inv) => {
     setInvoiceData({
+      id: inv.id,
       invoiceNumber: inv.invoice_number,
       date: inv.date,
       dueDate: inv.due_date || '',
@@ -131,9 +162,15 @@ export default function InvoiceList() {
       clientName: inv.client_name,
       clientAddress: inv.client_address,
       items: typeof inv.items === 'string' ? JSON.parse(inv.items) : inv.items,
+      global_discount: inv.discount || 0,
       taxRate: inv.tax_rate,
+      includeTax: true,
       notes: inv.notes || '',
-      lr_id: inv.lr_id
+      terms: inv.terms || '',
+      lr_id: inv.lr_id,
+      payment_status: inv.payment_status || 'Unpaid',
+      payment_mode: inv.payment_mode || '',
+      invoice_type: inv.invoice_type || 'Standard Invoice'
     });
     setIsEditing(true);
   };
@@ -168,12 +205,12 @@ export default function InvoiceList() {
 
   useEffect(() => {
     const calculateScale = () => {
-      // 420px sidebar + 64px padding (p-8 is 2rem = 32px each side)
-      const availableWidth = window.innerWidth - 420 - 64; 
+      // 260px main sidebar + 420px form sidebar + 64px padding (p-8 is 2rem = 32px each side)
+      const availableWidth = window.innerWidth - 260 - 420 - 64; 
       if (availableWidth > 0) {
         // 794px is the base width of A4 Portrait. Subtract 20px for visual padding.
         const newScale = Math.max((availableWidth - 20) / 794, 0.1);
-        setScale(Math.min(newScale, 1.2)); 
+        setScale(Math.min(newScale, 2.0)); 
       }
     };
     
@@ -190,10 +227,12 @@ export default function InvoiceList() {
     
     setIsSaving(true);
     try {
-      // Calculate totals
-      const subtotal = invoiceData.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-      const tax_amount = subtotal * (invoiceData.taxRate / 100);
-      const total = subtotal + tax_amount;
+      const totals = calculateInvoiceTotals(
+        invoiceData.items,
+        invoiceData.global_discount,
+        invoiceData.taxRate,
+        invoiceData.includeTax !== false
+      );
 
       const payload = {
         company_id: businessData.id,
@@ -203,11 +242,21 @@ export default function InvoiceList() {
         customer_id: invoiceData.customer_id,
         client_name: invoiceData.clientName,
         client_address: invoiceData.clientAddress,
-        subtotal: subtotal,
+        subtotal: totals.subtotal,
+        discount: totals.discount,
+        taxable_amount: totals.taxableAmount,
         tax_rate: invoiceData.taxRate,
-        tax_amount: tax_amount,
-        total: total,
+        tax_amount: totals.taxAmount,
+        cgst: totals.cgst,
+        sgst: totals.sgst,
+        igst: totals.igst,
+        round_off: totals.roundOff,
+        total: totals.grandTotal,
+        payment_status: invoiceData.payment_status || 'Unpaid',
+        payment_mode: invoiceData.payment_mode || null,
+        invoice_type: invoiceData.invoice_type || 'Standard Invoice',
         notes: invoiceData.notes,
+        terms: invoiceData.terms,
         status: invoiceData.status || 'Pending',
         items: invoiceData.items,
         lr_id: invoiceData.lr_id || null
@@ -285,10 +334,10 @@ export default function InvoiceList() {
             <InvoiceForm invoiceData={invoiceData} setInvoiceData={setInvoiceData} />
           </div>
           <div 
-            className="flex-1 overflow-auto bg-slate-200 flex justify-center items-center p-8 print-container" 
+            className="flex-1 overflow-auto bg-slate-200 flex p-8 print-container" 
             style={{ minWidth: 0 }}
           >
-            <div style={{ width: `${794 * scale}px`, height: `${1123 * scale}px`, position: 'relative' }}>
+            <div style={{ margin: 'auto', width: `${794 * scale}px`, height: `${1123 * scale}px`, position: 'relative', flexShrink: 0 }}>
               <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: '794px', height: '1123px', position: 'absolute', top: 0, left: 0 }}>
                 <div id="invoice-preview-content" style={{ width: '794px', minWidth: '794px', minHeight: '1123px', backgroundColor: 'white', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', borderRadius: '4px', overflow: 'hidden' }}>
                   <InvoicePreview businessData={businessData} invoiceData={invoiceData} />
@@ -335,13 +384,15 @@ export default function InvoiceList() {
                   <th>Subtotal</th>
                   <th>Total</th>
                   <th>Status</th>
+                  <th>Payment</th>
+                  <th>Origin</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredInvoices.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="text-center text-muted py-6">
+                    <td colSpan="9" className="text-center text-muted py-6">
                       <div className="flex flex-col items-center gap-2">
                         <FileText size={32} style={{ opacity: 0.5 }} />
                         No Invoices found.
@@ -351,11 +402,11 @@ export default function InvoiceList() {
                 ) : (
                   filteredInvoices.map(inv => (
                     <tr key={inv.id}>
-                      <td>{inv.date}</td>
+                      <td>{inv.date.split('-').reverse().join('/')}</td>
                       <td className="font-bold text-blue-600" style={{ color: 'var(--accent-primary)', cursor: 'pointer' }} onClick={() => handleView(inv)}>
                         {inv.invoice_number}
                       </td>
-                      <td>{inv.client_name}</td>
+                      <td className="truncate max-w-[200px]">{inv.client_name}</td>
                       <td>₹{Number(inv.subtotal).toFixed(2)}</td>
                       <td className="font-bold">₹{Number(inv.total).toFixed(2)}</td>
                       <td>
@@ -364,9 +415,38 @@ export default function InvoiceList() {
                         </span>
                       </td>
                       <td>
-                        <button className="btn-icon" onClick={() => handleView(inv)}>
-                          <FileText size={16} />
-                        </button>
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                          inv.payment_status === 'Paid' ? 'bg-emerald-100 text-emerald-800' :
+                          inv.payment_status === 'Partially Paid' ? 'bg-amber-100 text-amber-800' :
+                          inv.payment_status === 'Overdue' ? 'bg-red-100 text-red-800' :
+                          'bg-slate-100 text-slate-800'
+                        }`}>
+                          {inv.payment_status || 'Unpaid'}
+                        </span>
+                      </td>
+                      <td>
+                        {inv.lr_id ? (
+                          <span className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded border border-blue-200">From LR</span>
+                        ) : (
+                          <span className="text-xs text-slate-500">Standalone</span>
+                        )}
+                      </td>
+                      <td>
+                        <div className="flex gap-2">
+                          <button className="btn-icon" onClick={() => handleView(inv)} title="Edit">
+                            <FileText size={16} />
+                          </button>
+                          <button className="btn-icon text-blue-600" onClick={() => handleDuplicate(inv)} title="Duplicate">
+                            <Plus size={16} />
+                          </button>
+                          <button className="btn-icon text-red-500" onClick={() => {
+                            if(window.confirm('Delete this invoice?')) {
+                              supabase.from('invoices').delete().eq('id', inv.id).then(() => fetchInvoices());
+                            }
+                          }} title="Delete">
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))

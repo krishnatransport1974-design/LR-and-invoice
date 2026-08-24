@@ -193,12 +193,12 @@ export default function LRList() {
 
   useEffect(() => {
     const calculateScale = () => {
-      // 420px sidebar + 64px padding (p-8 is 2rem = 32px each side)
-      const availableWidth = window.innerWidth - 420 - 64; 
+      // 260px main sidebar + 420px form sidebar + 64px padding (p-8 is 2rem = 32px each side)
+      const availableWidth = window.innerWidth - 260 - 420 - 64; 
       if (availableWidth > 0) {
         // 1123px is the base width of A4 Landscape. Subtract 20px for visual padding.
         const newScale = Math.max((availableWidth - 20) / 1123, 0.1);
-        setScale(Math.min(newScale, 1.2)); 
+        setScale(Math.min(newScale, 2.0)); 
       }
     };
     
@@ -262,10 +262,10 @@ export default function LRList() {
           </div>
           
           <div 
-            className="flex-1 overflow-auto bg-slate-200 flex justify-center items-center p-8 print-container" 
+            className="flex-1 overflow-auto bg-slate-200 flex p-8 print-container" 
             style={{ minWidth: 0 }}
           >
-            <div style={{ width: `${1123 * scale}px`, height: `${794 * scale}px`, position: 'relative' }}>
+            <div style={{ margin: 'auto', width: `${1123 * scale}px`, height: `${794 * scale}px`, position: 'relative', flexShrink: 0 }}>
               <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: '1123px', height: '794px', position: 'absolute', top: 0, left: 0 }}>
                 <div id="lr-preview-content" style={{ width: '1123px', minWidth: '1123px', minHeight: '794px', backgroundColor: 'white', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', borderRadius: '4px', overflow: 'hidden' }}>
                   <LRPreview businessData={businessData} lrData={lrData} />
