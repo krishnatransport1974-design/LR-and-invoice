@@ -221,12 +221,12 @@ export default function LRPreview({ businessData, lrData, printMode = 'main' }) 
       <style>
         {`
           @media print {
-            @page { size: a4 portrait; margin: 0; }
+            @page { size: a4 landscape; margin: 0; }
             body { -webkit-print-color-adjust: exact; print-color-adjust: exact; margin: 0; }
           }
         `}
       </style>
-      <div style={{ width: '210mm', backgroundColor: 'white' }}>
+      <div style={{ width: '297mm', backgroundColor: 'white' }}>
         <SingleLR businessData={businessData} lrData={lrData} copyType="Main Copy" bgColor="#ffffff" />
         {/* If user wants to print both copies, they could be mapped here. Keeping it single for PDF standard A4. */}
       </div>
