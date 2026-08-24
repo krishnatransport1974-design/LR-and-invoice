@@ -117,23 +117,13 @@ const InvoicePreview = ({ businessData, invoiceData }) => {
 
         {/* Bill To & Ship To */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-          <div style={{ width: '48%', backgroundColor: '#f8fafc', padding: '15px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+          <div style={{ width: '50%', backgroundColor: '#f8fafc', padding: '15px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
             <h3 style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', margin: '0 0 8px 0', letterSpacing: '0.05em' }}>Bill To</h3>
             <div style={{ fontWeight: '700', fontSize: '1.1rem', marginBottom: '5px' }}>{invoiceData?.clientName || '-'}</div>
             <div style={{ color: '#475569', fontSize: '0.85rem', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>
               {invoiceData?.clientAddress || '-'}
             </div>
           </div>
-          
-          {invoiceData?.lr_id && (
-            <div style={{ width: '48%', backgroundColor: '#f0f9ff', padding: '15px', borderRadius: '6px', border: '1px solid #bae6fd' }}>
-              <h3 style={{ fontSize: '0.75rem', fontWeight: '700', color: '#0369a1', textTransform: 'uppercase', margin: '0 0 8px 0', letterSpacing: '0.05em' }}>Reference</h3>
-              <div style={{ fontWeight: '700', fontSize: '1rem', color: '#0c4a6e', marginBottom: '5px' }}>Generated from Lorry Receipt</div>
-              <div style={{ color: '#0ea5e9', fontSize: '0.85rem', fontWeight: '600' }}>
-                LR Linked: Yes
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Items Table */}
