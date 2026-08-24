@@ -262,10 +262,10 @@ export default function LRList() {
           </div>
           
           <div 
-            className="flex-1 overflow-auto bg-slate-200 flex p-8 print-container" 
-            style={{ minWidth: 0 }}
+            className="flex-1 overflow-auto bg-slate-200 p-8 print-container" 
+            style={{ minWidth: 0, textAlign: 'center' }}
           >
-            <div style={{ margin: 'auto', width: `${1123 * scale}px`, height: `${794 * scale}px`, position: 'relative', flexShrink: 0 }}>
+            <div style={{ margin: '0 auto', width: `${1123 * scale}px`, height: `${794 * scale}px`, position: 'relative', flexShrink: 0, textAlign: 'left' }}>
               <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: '1123px', height: '794px', position: 'absolute', top: 0, left: 0 }}>
                 <div id="lr-preview-content" style={{ width: '1123px', minWidth: '1123px', minHeight: '794px', backgroundColor: 'white', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', borderRadius: '4px', overflow: 'hidden' }}>
                   <LRPreview businessData={businessData} lrData={lrData} />
