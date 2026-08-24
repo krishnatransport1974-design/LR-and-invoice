@@ -187,6 +187,7 @@ export default function LRList() {
               <div style={{ transform: 'scale(0.65)', transformOrigin: 'top left' }}>
                 <div id="lr-preview-content" style={{ width: '1123px', minWidth: '1123px', minHeight: '794px', backgroundColor: 'white', padding: '40px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', borderRadius: '4px' }}>
                   <LRPreview businessData={businessData} lrData={lrData} />
+                </div>
               </div>
             </div>
           </div>
