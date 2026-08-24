@@ -119,11 +119,11 @@ export default function LRList() {
     const element = document.getElementById('lr-preview-content');
     if (!element) return;
     const opt = {
-      margin:       0.5,
+      margin:       0.2, // Reduced margin to ensure it fits on one page
       filename:     `LR_${lrData.lrNumber}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2 },
-      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
     };
     toast.promise(
       html2pdf().set(opt).from(element).save(),
@@ -182,7 +182,7 @@ export default function LRList() {
           </div>
           <div className="flex-1 overflow-y-auto p-8 flex justify-center no-print" style={{ alignItems: 'flex-start' }}>
             <div className="preview-container" style={{ transformOrigin: 'top center' }}>
-              <div id="lr-preview-content" style={{ width: '210mm', minHeight: '297mm', backgroundColor: 'white', padding: '15mm', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', borderRadius: '4px' }}>
+              <div id="lr-preview-content" style={{ width: '297mm', minHeight: '210mm', backgroundColor: 'white', padding: '15mm', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', borderRadius: '4px' }}>
                 <LRPreview businessData={businessData} lrData={lrData} />
               </div>
             </div>

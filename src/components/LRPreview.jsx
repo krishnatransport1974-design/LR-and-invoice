@@ -14,8 +14,8 @@ const SingleLR = ({ businessData, lrData, copyType, bgColor }) => {
       backgroundColor: bgColor,
       padding: isCompact ? '15px' : '20px 30px',
       position: 'relative',
-      minHeight: isCompact ? '148mm' : '297mm', // Compact = A5 size roughly, else A4 portrait
-      width: '210mm',
+      minHeight: isCompact ? '148mm' : '210mm', // Landscape height
+      width: '100%', // Take up full width of the wrapper (297mm)
       boxSizing: 'border-box',
       display: 'flex',
       flexDirection: 'column',
