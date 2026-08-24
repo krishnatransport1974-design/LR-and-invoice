@@ -39,23 +39,26 @@ export default function InvoicePreview({ businessData, invoiceData }) {
         
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: `2px solid ${accentColor}`, paddingBottom: '20px', marginBottom: '20px' }}>
-          <div style={{ flex: 1 }}>
-            {businessData?.logo_url ? (
-              <img src={businessData.logo_url} alt="Logo" style={{ maxWidth: '200px', maxHeight: '80px', objectFit: 'contain', marginBottom: '10px' }} />
-            ) : (
+          <div style={{ display: 'flex', gap: '15px' }}>
+            {businessData?.logo_url && (
+              <div style={{ width: '120px', display: 'flex', alignItems: 'flex-start' }}>
+                <img src={businessData.logo_url} alt="Logo" style={{ maxWidth: '100%', maxHeight: '80px', objectFit: 'contain' }} />
+              </div>
+            )}
+            <div>
               <h1 style={{ fontSize: '2rem', fontWeight: '800', margin: '0 0 10px 0', color: primaryColor, textTransform: 'uppercase' }}>
                 {businessData?.name || 'Company Name'}
               </h1>
-            )}
-            <div style={{ color: '#475569', lineHeight: '1.4' }}>
-              <p style={{ margin: 0 }}>{businessData?.address}</p>
-              <p style={{ margin: 0 }}><strong>Phone:</strong> {businessData?.phone || '-'}</p>
-              <p style={{ margin: 0 }}><strong>Email:</strong> {businessData?.email || '-'}</p>
-              <p style={{ margin: 0 }}><strong>GSTIN:</strong> {businessData?.gstin || '-'}</p>
+              <div style={{ color: '#475569', lineHeight: '1.4' }}>
+                <p style={{ margin: 0 }}>{businessData?.address}</p>
+                <p style={{ margin: 0 }}><strong>Phone:</strong> {businessData?.phone || '-'}</p>
+                <p style={{ margin: 0 }}><strong>Email:</strong> {businessData?.email || '-'}</p>
+                <p style={{ margin: 0 }}><strong>GSTIN:</strong> {businessData?.gstin || '-'}</p>
+              </div>
             </div>
           </div>
           
-          <div style={{ textAlign: 'right' }}>
+          <div style={{ textAlign: 'right', shrink: 0 }}>
             <h2 style={{ fontSize: '2.5rem', fontWeight: '800', margin: '0 0 10px 0', color: accentColor, textTransform: 'uppercase', letterSpacing: '2px' }}>INVOICE</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', alignItems: 'flex-end' }}>
               <div style={{ display: 'flex', width: '200px', justifyContent: 'space-between' }}>
