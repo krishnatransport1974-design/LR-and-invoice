@@ -35,12 +35,17 @@ const SingleLR = ({ businessData, lrData, copyType, bgColor }) => {
           <h1 style={{ fontSize: '2.5rem', fontWeight: '900', margin: '0 0 10px 0', textTransform: 'uppercase', fontFamily: '"Times New Roman", serif', letterSpacing: '1px' }}>
             {businessData?.name || 'Company Name'}
           </h1>
-          <div style={{ fontWeight: '600', fontSize: '0.9rem', lineHeight: '1.5' }}>
-            {businessData?.address || ''}
-            <br />
-            Contact No.: {businessData?.phone || '-'} &nbsp; E-mail ID : {businessData?.email || '-'}
-            <br />
-            GSTIN: {businessData?.gstin || '-'}
+          <div style={{ fontWeight: '600', fontSize: '0.85rem', lineHeight: '1.4' }}>
+            <div style={{ marginBottom: '3px' }}>
+              {businessData?.address ? businessData.address.replace(/\n/g, ', ') : ''}
+            </div>
+            <div>
+              {businessData?.phone && <span>Contact No.: {businessData.phone}</span>}
+              {businessData?.phone && businessData?.email && <span style={{ margin: '0 8px', color: '#666' }}>|</span>}
+              {businessData?.email && <span>Email: {businessData.email}</span>}
+              {(businessData?.phone || businessData?.email) && businessData?.gstin && <span style={{ margin: '0 8px', color: '#666' }}>|</span>}
+              {businessData?.gstin && <span>GSTIN: {businessData.gstin}</span>}
+            </div>
           </div>
         </div>
 
