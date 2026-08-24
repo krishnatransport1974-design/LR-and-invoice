@@ -96,7 +96,7 @@ export default function InvoiceList() {
         global_discount: 0,
         taxRate: businessData?.default_tax || 0,
         includeTax: true,
-        notes: `Reference LR: ${lr.lrNumber}`,
+        notes: '',
         terms: businessData?.default_payment_terms || '',
         lr_id: lr.id,
         payment_status: 'Unpaid',

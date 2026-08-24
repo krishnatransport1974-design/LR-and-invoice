@@ -185,15 +185,7 @@ export default function InvoiceForm({ invoiceData, setInvoiceData }) {
   return (
     <div className="flex flex-col gap-2">
       
-      <div className="flex justify-between items-center bg-blue-50 border border-blue-100 p-3 rounded-lg mb-2">
-        <div className="text-sm text-blue-800 font-medium">Standalone Invoice Mode</div>
-        <button 
-          className={`text-xs flex items-center gap-1 font-medium transition-colors px-3 py-1.5 rounded-md ${invoiceData.lr_id ? 'bg-emerald-100 text-emerald-700' : 'bg-white border border-blue-200 text-blue-600 hover:bg-blue-100'}`}
-          onClick={() => setShowLRImport(!showLRImport)}
-        >
-          {invoiceData.lr_id ? <><LinkIcon size={14} /> LR Linked</> : <><LinkIcon size={14} /> Import from LR (Optional)</>}
-        </button>
-      </div>
+
 
       {showLRImport && (
         <div className="mb-4 p-4 bg-white border border-blue-200 rounded-md shadow-sm relative">
@@ -220,7 +212,22 @@ export default function InvoiceForm({ invoiceData, setInvoiceData }) {
       )}
 
       {/* Invoice Details Section */}
-      <SectionHeader title="Invoice Details" section="details" />
+      <div className="flex justify-between items-center mb-4 pb-2 border-b" style={{ borderColor: 'var(--border-color)', marginTop: '20px' }}>
+        <div className="flex items-center gap-4">
+          <div className="text-xs font-bold uppercase tracking-wider text-slate-500 cursor-pointer hover:text-slate-700" onClick={() => toggleSection('details')}>
+            Invoice Details
+          </div>
+          <button 
+            className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded transition-colors"
+            onClick={(e) => { e.stopPropagation(); setShowLRImport(!showLRImport); }}
+          >
+            <LinkIcon size={12} /> {invoiceData.lr_id ? 'Change Linked LR' : 'Import from LR'}
+          </button>
+        </div>
+        <button className="text-slate-400 cursor-pointer" onClick={() => toggleSection('details')}>
+          {expandedSections.details ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+      </div>
       {expandedSections.details && (
         <div className="form-section pt-0">
           <div className="form-row">
