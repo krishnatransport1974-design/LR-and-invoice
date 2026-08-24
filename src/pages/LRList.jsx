@@ -56,7 +56,8 @@ export default function LRList() {
       if (error) throw error;
       setLrs(data || []);
     } catch (err) {
-      toast.error('Failed to load Lorry Receipts');
+      console.error('Error fetching LRs:', err);
+      toast.error(`Failed to load Lorry Receipts: ${err.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
