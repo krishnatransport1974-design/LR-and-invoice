@@ -203,8 +203,8 @@ export default function LRForm({ lrData, setLrData }) {
                   <Trash2 size={14} />
                 </button>
               </div>
-              <div className="grid grid-cols-2 gap-3" style={{ gridTemplateColumns: '1fr 1fr' }}>
-                <div className="form-group mb-0">
+              <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+                <div className="form-group mb-0" style={{ gridColumn: '1 / -1' }}>
                   <label>Packages</label>
                   <textarea rows="1" value={good.packages} onChange={(e) => updateGood(good.id, 'packages', e.target.value)} placeholder="388 Bags" />
                 </div>
