@@ -1,14 +1,10 @@
-import { Plus, Trash2, Link as LinkIcon, X, Search, ChevronDown, ChevronUp } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { supabase } from '../supabase';
+import { Plus, Trash2, Search, ChevronDown, ChevronUp } from 'lucide-react';
+import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { calculateInvoiceTotals } from '../utils/invoiceCalculations';
 
 export default function InvoiceForm({ invoiceData, setInvoiceData }) {
-  const [customers, setCustomers] = useState([]);
-  const [lrs, setLrs] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [showLRImport, setShowLRImport] = useState(false);
+  const { businessData, customers, products } = useOutletContext();
   const [expandedSections, setExpandedSections] = useState({
     details: true,
     billing: true,
@@ -16,26 +12,6 @@ export default function InvoiceForm({ invoiceData, setInvoiceData }) {
     payment: true,
     notes: true
   });
-  const { businessData } = useOutletContext();
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [custRes, lrRes, prodRes] = await Promise.all([
-          supabase.from('customers').select('id, name, address, company_name'),
-          supabase.from('lorry_receipts').select('id, lr_number, date, customer_id, from_city, to_city, goods, consignor_name, consignor_address')
-            .is('status', null),
-          supabase.from('products').select('*')
-        ]);
-        if (custRes.data) setCustomers(custRes.data);
-        if (lrRes.data) setLrs(lrRes.data);
-        if (prodRes.data) setProducts(prodRes.data);
-      } catch (err) {
-        console.error("Error fetching dependencies", err);
-      }
-    };
-    fetchData();
-  }, []);
 
   const updateInvoice = (field, value) => {
     setInvoiceData(prev => ({ ...prev, [field]: value }));
@@ -129,46 +105,6 @@ export default function InvoiceForm({ invoiceData, setInvoiceData }) {
     }
   };
 
-  const handleLRChange = (e) => {
-    const id = e.target.value;
-    updateInvoice('lr_id', id);
-    const lr = lrs.find(l => l.id === id);
-    if (lr) {
-      updateInvoice('clientName', lr.consignor_name || '');
-      updateInvoice('clientAddress', lr.consignor_address || '');
-      updateInvoice('customer_id', lr.customer_id || '');
-      
-      let newItems = [];
-      const goodsArray = typeof lr.goods === 'string' ? JSON.parse(lr.goods) : lr.goods;
-      
-      if (goodsArray && goodsArray.length > 0) {
-        newItems = goodsArray.map((g, idx) => ({
-          id: Date.now() + idx,
-          description: `Freight for ${g.product || 'Goods'} (${lr.from_city} to ${lr.to_city}) - LR: ${lr.lr_number}`,
-          hsn_sac: '996511', // default SAC for freight
-          quantity: g.weight ? Number(g.weight) : 1,
-          unit: 'KG',
-          price: 0,
-          discount: 0,
-          tax_rate: businessData?.default_tax || 0
-        }));
-      } else {
-        newItems = [{
-          id: Date.now(),
-          description: `Freight Charges - LR: ${lr.lr_number}`,
-          hsn_sac: '996511',
-          quantity: 1,
-          unit: 'TRIP',
-          price: 0,
-          discount: 0,
-          tax_rate: businessData?.default_tax || 0
-        }];
-      }
-      updateInvoice('items', newItems);
-      setShowLRImport(false);
-    }
-  };
-
   const SectionHeader = ({ title, section }) => (
     <div 
       className="flex justify-between items-center mb-4 pb-2 border-b cursor-pointer hover:bg-slate-50 transition-colors" 
@@ -185,49 +121,8 @@ export default function InvoiceForm({ invoiceData, setInvoiceData }) {
   return (
     <div className="flex flex-col gap-2">
       
-
-
-      {showLRImport && (
-        <div className="mb-4 p-4 bg-white border border-blue-200 rounded-md shadow-sm relative">
-          <button 
-            className="absolute top-2 right-2 text-slate-400 hover:text-slate-600 p-1"
-            onClick={() => setShowLRImport(false)}
-          >
-            <X size={16} />
-          </button>
-          <label className="text-sm font-semibold text-slate-700 mb-2 block">Select Lorry Receipt to Auto-fill Invoice</label>
-          <select 
-            value={invoiceData.lr_id || ''} 
-            onChange={handleLRChange}
-            className="w-full text-sm"
-          >
-            <option value="">-- No LR Linked --</option>
-            {lrs.map(lr => (
-              <option key={lr.id} value={lr.id}>
-                {lr.lr_number} - {lr.consignor_name} ({lr.date})
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
       {/* Invoice Details Section */}
-      <div className="flex justify-between items-center mb-4 pb-2 border-b" style={{ borderColor: 'var(--border-color)', marginTop: '20px' }}>
-        <div className="flex items-center gap-4">
-          <div className="text-xs font-bold uppercase tracking-wider text-slate-500 cursor-pointer hover:text-slate-700" onClick={() => toggleSection('details')}>
-            Invoice Details
-          </div>
-          <button 
-            className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded transition-colors"
-            onClick={(e) => { e.stopPropagation(); setShowLRImport(!showLRImport); }}
-          >
-            <LinkIcon size={12} /> {invoiceData.lr_id ? 'Change Linked LR' : 'Import from LR'}
-          </button>
-        </div>
-        <button className="text-slate-400 cursor-pointer" onClick={() => toggleSection('details')}>
-          {expandedSections.details ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </button>
-      </div>
+      <SectionHeader title="Invoice Details" section="details" />
       {expandedSections.details && (
         <div className="form-section pt-0">
           <div className="form-row">
