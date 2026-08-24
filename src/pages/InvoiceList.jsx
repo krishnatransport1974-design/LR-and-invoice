@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabase';
-import { Loader2, Plus, Search, FileText, Printer, FileDown, ArrowLeft } from 'lucide-react';
+import { Loader2, Plus, Search, FileText, Printer, FileDown, ArrowLeft, Database } from 'lucide-react';
 import toast from 'react-hot-toast';
 import InvoiceForm from '../components/InvoiceForm';
 import InvoicePreview from '../components/InvoicePreview';
@@ -16,6 +16,7 @@ export default function InvoiceList() {
   const [isEditing, setIsEditing] = useState(() => {
     return localStorage.getItem('inv_isEditing') === 'true';
   });
+  const [isSaving, setIsSaving] = useState(false);
   const { businessData } = useOutletContext();
   const location = useLocation();
   
@@ -181,6 +182,64 @@ export default function InvoiceList() {
     return () => window.removeEventListener('resize', calculateScale);
   }, []);
 
+  const handleSaveToDB = async () => {
+    if (!businessData?.id) {
+      toast.error('Company ID not found');
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      // Calculate totals
+      const subtotal = invoiceData.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+      const tax_amount = subtotal * (invoiceData.taxRate / 100);
+      const total = subtotal + tax_amount;
+
+      const payload = {
+        company_id: businessData.id,
+        invoice_number: invoiceData.invoiceNumber,
+        date: invoiceData.date,
+        due_date: invoiceData.dueDate || null,
+        customer_id: invoiceData.customer_id,
+        client_name: invoiceData.clientName,
+        client_address: invoiceData.clientAddress,
+        subtotal: subtotal,
+        tax_rate: invoiceData.taxRate,
+        tax_amount: tax_amount,
+        total: total,
+        notes: invoiceData.notes,
+        status: invoiceData.status || 'Pending',
+        items: invoiceData.items,
+        lr_id: invoiceData.lr_id || null
+      };
+
+      const { data: existing } = await supabase.from('invoices').select('id').eq('invoice_number', invoiceData.invoiceNumber).eq('company_id', businessData.id).single();
+      
+      let error;
+      if (existing) {
+        const res = await supabase.from('invoices').update(payload).eq('id', existing.id);
+        error = res.error;
+      } else {
+        const res = await supabase.from('invoices').insert([payload]);
+        error = res.error;
+      }
+
+      if (error) throw error;
+      
+      // Update LR status if an LR was linked
+      if (invoiceData.lr_id) {
+        await supabase.from('lorry_receipts').update({ status: 'Billed' }).eq('id', invoiceData.lr_id);
+      }
+
+      toast.success('Invoice Saved Successfully!');
+      fetchInvoices();
+    } catch (error) {
+      toast.error(`Error: ${error.message}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   if (isEditing) {
     return (
       <div className="flex flex-col h-full bg-slate-50">
@@ -198,14 +257,23 @@ export default function InvoiceList() {
           </div>
           <div className="flex items-center gap-2">
             <button 
-              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-white transition-colors shadow-sm hover:shadow whitespace-nowrap flex-shrink-0" 
+              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-white transition-colors shadow-sm hover:shadow whitespace-nowrap shrink-0" 
+              onClick={handleSaveToDB}
+              disabled={isSaving}
+              style={{ backgroundColor: '#10b981', border: '1px solid #059669' }}
+            >
+              {isSaving ? <Loader2 size={16} className="spin" /> : <Database size={16} />}
+              Save Invoice
+            </button>
+            <button 
+              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-white transition-colors shadow-sm hover:shadow whitespace-nowrap shrink-0" 
               onClick={generatePDF}
               style={{ backgroundColor: '#2563eb', border: '1px solid #1d4ed8' }}
             >
               <FileDown size={16} /> Download PDF
             </button>
             <button 
-              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors shadow-sm hover:shadow whitespace-nowrap flex-shrink-0" 
+              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors shadow-sm hover:shadow whitespace-nowrap shrink-0" 
               onClick={() => window.print()}
               style={{ backgroundColor: '#f8fafc', color: '#334155', border: '1px solid #cbd5e1' }}
             >

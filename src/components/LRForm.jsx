@@ -5,10 +5,8 @@ import toast from 'react-hot-toast';
 import { useOutletContext } from 'react-router-dom';
 
 export default function LRForm({ lrData, setLrData }) {
-  const [isSaving, setIsSaving] = useState(false);
   const [customers, setCustomers] = useState([]);
   const [vehicles, setVehicles] = useState([]);
-  const { businessData } = useOutletContext();
 
   useEffect(() => {
     // Fetch customers and vehicles for dropdowns
@@ -84,50 +82,7 @@ export default function LRForm({ lrData, setLrData }) {
     }
   };
 
-  const handleSaveToDB = async () => {
-    if (!businessData?.id) {
-      toast.error('Company ID not found');
-      return;
-    }
-    
-    setIsSaving(true);
-    try {
-      const payload = {
-        company_id: businessData.id,
-        lr_number: lrData.lrNumber,
-        date: lrData.date,
-        inv_no: lrData.invNo,
-        from_city: lrData.from,
-        to_city: lrData.to,
-        consignor_name: lrData.consignorName,
-        consignor_address: lrData.consignorAddress,
-        consignee_name: lrData.consigneeName,
-        consignee_address: lrData.consigneeAddress,
-        customer_id: lrData.customer_id,
-        vehicle_id: lrData.vehicle_id,
-        goods: lrData.goods
-      };
 
-      // Check if updating or inserting based on existence
-      const { data: existing } = await supabase.from('lorry_receipts').select('id').eq('lr_number', lrData.lrNumber).eq('company_id', businessData.id).single();
-      
-      let error;
-      if (existing) {
-        const res = await supabase.from('lorry_receipts').update(payload).eq('id', existing.id);
-        error = res.error;
-      } else {
-        const res = await supabase.from('lorry_receipts').insert([payload]);
-        error = res.error;
-      }
-
-      if (error) throw error;
-      toast.success('LR Saved Successfully!');
-    } catch (error) {
-      toast.error(`Error: ${error.message}`);
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -237,13 +192,6 @@ export default function LRForm({ lrData, setLrData }) {
         </div>
       </div>
 
-      {/* Save Button */}
-      <div className="form-section no-print mt-4 border-t pt-4" style={{ borderColor: 'var(--border-color)' }}>
-        <button className="btn btn-primary w-full" onClick={handleSaveToDB} disabled={isSaving}>
-          {isSaving ? <Loader2 size={20} className="spin" /> : <Database size={20} />}
-          Save LR to Database
-        </button>
-      </div>
     </div>
   );
 }

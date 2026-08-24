@@ -1,11 +1,9 @@
-import { Plus, Trash2, Database, Loader2 } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
-import toast from 'react-hot-toast';
 import { useOutletContext } from 'react-router-dom';
 
 export default function InvoiceForm({ invoiceData, setInvoiceData }) {
-  const [isSaving, setIsSaving] = useState(false);
   const [customers, setCustomers] = useState([]);
   const [lrs, setLrs] = useState([]);
   const { businessData } = useOutletContext();
@@ -93,63 +91,6 @@ export default function InvoiceForm({ invoiceData, setInvoiceData }) {
         }];
       }
       updateInvoice('items', newItems);
-    }
-  };
-
-  const handleSaveToDB = async () => {
-    if (!businessData?.id) {
-      toast.error('Company ID not found');
-      return;
-    }
-    
-    setIsSaving(true);
-    try {
-      // Calculate totals
-      const subtotal = invoiceData.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-      const tax_amount = subtotal * (invoiceData.taxRate / 100);
-      const total = subtotal + tax_amount;
-
-      const payload = {
-        company_id: businessData.id,
-        invoice_number: invoiceData.invoiceNumber,
-        date: invoiceData.date,
-        due_date: invoiceData.dueDate || null,
-        customer_id: invoiceData.customer_id,
-        client_name: invoiceData.clientName,
-        client_address: invoiceData.clientAddress,
-        subtotal: subtotal,
-        tax_rate: invoiceData.taxRate,
-        tax_amount: tax_amount,
-        total: total,
-        notes: invoiceData.notes,
-        status: invoiceData.status || 'Pending',
-        items: invoiceData.items,
-        lr_id: invoiceData.lr_id || null
-      };
-
-      const { data: existing } = await supabase.from('invoices').select('id').eq('invoice_number', invoiceData.invoiceNumber).eq('company_id', businessData.id).single();
-      
-      let error;
-      if (existing) {
-        const res = await supabase.from('invoices').update(payload).eq('id', existing.id);
-        error = res.error;
-      } else {
-        const res = await supabase.from('invoices').insert([payload]);
-        error = res.error;
-      }
-
-      if (error) throw error;
-      
-      // Update LR status if an LR was linked
-      if (invoiceData.lr_id) {
-        await supabase.from('lorry_receipts').update({ status: 'Billed' }).eq('id', invoiceData.lr_id);
-      }
-
-      toast.success('Invoice Saved Successfully!');
-    } catch (error) {
-      toast.error(`Error: ${error.message}`);
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -250,13 +191,6 @@ export default function InvoiceForm({ invoiceData, setInvoiceData }) {
             <textarea rows="2" value={invoiceData.notes} onChange={(e) => updateInvoice('notes', e.target.value)} />
           </div>
         </div>
-      </div>
-
-      <div className="form-section no-print mt-4 border-t pt-4" style={{ borderColor: 'var(--border-color)' }}>
-        <button className="btn btn-primary w-full" onClick={handleSaveToDB} disabled={isSaving}>
-          {isSaving ? <Loader2 size={20} className="spin" /> : <Database size={20} />}
-          Save Invoice to Database
-        </button>
       </div>
     </div>
   );

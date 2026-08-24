@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabase';
-import { Loader2, Plus, Search, FileText, Printer, FileDown, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Plus, Search, FileText, FileDown, Printer, Database, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import LRForm from '../components/LRForm';
 import LRPreview from '../components/LRPreview';
@@ -16,6 +16,7 @@ export default function LRList() {
   const [isEditing, setIsEditing] = useState(() => {
     return localStorage.getItem('lr_isEditing') === 'true';
   });
+  const [isSaving, setIsSaving] = useState(false);
   const { businessData } = useOutletContext();
   const navigate = useNavigate();
   
@@ -115,6 +116,52 @@ export default function LRList() {
     setIsEditing(true);
   };
 
+  const handleSaveToDB = async () => {
+    if (!businessData?.id) {
+      toast.error('Company ID not found');
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      const payload = {
+        company_id: businessData.id,
+        lr_number: lrData.lrNumber,
+        date: lrData.date,
+        inv_no: lrData.invNo,
+        from_city: lrData.from,
+        to_city: lrData.to,
+        consignor_name: lrData.consignorName,
+        consignor_address: lrData.consignorAddress,
+        consignee_name: lrData.consigneeName,
+        consignee_address: lrData.consigneeAddress,
+        customer_id: lrData.customer_id,
+        vehicle_id: lrData.vehicle_id,
+        goods: lrData.goods
+      };
+
+      // Check if updating or inserting based on existence
+      const { data: existing } = await supabase.from('lorry_receipts').select('id').eq('lr_number', lrData.lrNumber).eq('company_id', businessData.id).single();
+      
+      let error;
+      if (existing) {
+        const res = await supabase.from('lorry_receipts').update(payload).eq('id', existing.id);
+        error = res.error;
+      } else {
+        const res = await supabase.from('lorry_receipts').insert([payload]);
+        error = res.error;
+      }
+
+      if (error) throw error;
+      toast.success('LR Saved Successfully!');
+      fetchLRs(); // Refresh the list
+    } catch (error) {
+      toast.error(`Error: ${error.message}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const generatePDF = () => {
     const element = document.getElementById('lr-preview-content');
     if (!element) return;
@@ -176,9 +223,18 @@ export default function LRList() {
             <h2 className="text-lg truncate min-w-0" style={{ maxWidth: '400px' }}>LR Editor: {lrData.lrNumber} <span style={{fontSize: '0.7rem', color: 'var(--success)', marginLeft: '10px', fontWeight: 'normal'}} className="hidden sm:inline">✓ Draft Auto-Saved</span></h2>
           </div>
           <div className="flex items-center gap-2">
+            <button 
+              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-white transition-colors shadow-sm hover:shadow whitespace-nowrap shrink-0" 
+              onClick={handleSaveToDB}
+              disabled={isSaving}
+              style={{ backgroundColor: '#10b981', border: '1px solid #059669' }}
+            >
+              {isSaving ? <Loader2 size={16} className="spin" /> : <Database size={16} />}
+              Save LR
+            </button>
             {lrData.id && (
               <button 
-                className="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors shadow-sm hover:shadow whitespace-nowrap flex-shrink-0" 
+                className="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors shadow-sm hover:shadow whitespace-nowrap shrink-0" 
                 onClick={() => navigate('/invoices', { state: { sourceLr: lrData } })}
                 style={{ backgroundColor: '#ecfdf5', color: '#059669', border: '1px solid #34d399' }}
               >
@@ -186,14 +242,14 @@ export default function LRList() {
               </button>
             )}
             <button 
-              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-white transition-colors shadow-sm hover:shadow whitespace-nowrap flex-shrink-0" 
+              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-white transition-colors shadow-sm hover:shadow whitespace-nowrap shrink-0" 
               onClick={generatePDF}
               style={{ backgroundColor: '#2563eb', border: '1px solid #1d4ed8' }}
             >
               <FileDown size={16} /> Download PDF
             </button>
             <button 
-              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors shadow-sm hover:shadow whitespace-nowrap flex-shrink-0" 
+              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors shadow-sm hover:shadow whitespace-nowrap shrink-0" 
               onClick={() => window.print()}
               style={{ backgroundColor: '#f8fafc', color: '#334155', border: '1px solid #cbd5e1' }}
             >
