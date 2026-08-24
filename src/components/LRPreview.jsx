@@ -175,7 +175,7 @@ const SingleLR = ({ businessData, lrData, copyType, bgColor }) => {
       </div>
 
       {/* Signatures */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '15px', paddingBottom: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '15px', paddingBottom: '10px' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ width: '150px', borderTop: '1px solid black', margin: '0 auto', paddingTop: '5px', fontWeight: 'bold' }}>
             Driver's Signature
