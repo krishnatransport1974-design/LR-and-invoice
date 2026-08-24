@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
-import { Loader2, Plus, Search, FileText, Printer, FileDown, ArrowLeft, Database, Copy, Eye } from 'lucide-react';
+import { Loader2, Plus, Search, FileText, Printer, FileDown, ArrowLeft, Database, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import InvoiceForm from '../components/InvoiceForm';
 import InvoicePreview from '../components/InvoicePreview';
@@ -106,7 +106,7 @@ export default function InvoiceList() {
       setIsEditing(true);
       window.history.replaceState({}, document.title);
     }
-  }, [location.state]);
+  }, [location.state, businessData]);
 
   const handleCreateNew = () => {
     setInvoiceData({
