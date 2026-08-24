@@ -111,6 +111,12 @@ const InvoicePreview = ({ businessData, invoiceData }) => {
                   <span style={{ fontWeight: '700' }}>{invoiceData.dueDate.split('-').reverse().join('/')}</span>
                 </div>
               )}
+              {businessData?.gstin && (
+                <div style={{ display: 'flex', width: '200px', justifyContent: 'space-between' }}>
+                  <span style={{ fontWeight: '600', color: '#64748b' }}>GSTIN:</span>
+                  <span style={{ fontWeight: '700' }}>{businessData.gstin}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -123,6 +129,17 @@ const InvoicePreview = ({ businessData, invoiceData }) => {
             <div style={{ color: '#475569', fontSize: '0.85rem', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>
               {invoiceData?.clientAddress || '-'}
             </div>
+            {(invoiceData?.clientPhone || invoiceData?.clientEmail) && (
+              <div style={{ color: '#475569', fontSize: '0.85rem', marginTop: '5px' }}>
+                {invoiceData?.clientPhone && <span><strong>Ph:</strong> {invoiceData.clientPhone} </span>}
+                {invoiceData?.clientEmail && <span><strong>Email:</strong> {invoiceData.clientEmail}</span>}
+              </div>
+            )}
+            {invoiceData?.clientGstin && (
+              <div style={{ color: '#475569', fontSize: '0.85rem', marginTop: '3px' }}>
+                <strong>GSTIN:</strong> {invoiceData.clientGstin}
+              </div>
+            )}
           </div>
         </div>
 

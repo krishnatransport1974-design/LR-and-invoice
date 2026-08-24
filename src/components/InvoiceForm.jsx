@@ -105,11 +105,27 @@ export default function InvoiceForm({ invoiceData, setInvoiceData }) {
 
   const handleCustomerChange = (e) => {
     const id = e.target.value;
-    updateInvoice('customer_id', id);
     const customer = customers.find(c => c.id === id);
     if (customer) {
-      updateInvoice('clientName', customer.company_name || customer.name);
-      updateInvoice('clientAddress', customer.address || '');
+      setInvoiceData({
+        ...invoiceData,
+        customer_id: customer.id,
+        clientName: customer.company_name || customer.name,
+        clientAddress: customer.address || '',
+        clientPhone: customer.phone || '',
+        clientEmail: customer.email || '',
+        clientGstin: customer.gstin || '',
+      });
+    } else {
+      setInvoiceData({
+        ...invoiceData,
+        customer_id: null,
+        clientName: '',
+        clientAddress: '',
+        clientPhone: '',
+        clientEmail: '',
+        clientGstin: '',
+      });
     }
   };
 
@@ -266,6 +282,20 @@ export default function InvoiceForm({ invoiceData, setInvoiceData }) {
           <div className="form-group">
             <label>Billing Address</label>
             <textarea rows="2" value={invoiceData.clientAddress} onChange={(e) => updateInvoice('clientAddress', e.target.value)} />
+          </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label>Phone Number</label>
+              <input type="text" value={invoiceData.clientPhone || ''} onChange={(e) => updateInvoice('clientPhone', e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label>Email</label>
+              <input type="email" value={invoiceData.clientEmail || ''} onChange={(e) => updateInvoice('clientEmail', e.target.value)} />
+            </div>
+          </div>
+          <div className="form-group">
+            <label>Customer GSTIN</label>
+            <input type="text" value={invoiceData.clientGstin || ''} onChange={(e) => updateInvoice('clientGstin', e.target.value)} />
           </div>
         </div>
       )}
