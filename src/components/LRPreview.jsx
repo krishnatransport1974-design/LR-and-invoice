@@ -18,7 +18,7 @@ const SingleLR = ({ businessData, lrData, copyType, bgColor }) => {
     }} className="single-lr-page">
       
       {/* Top Header Row */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
         {/* Logo */}
         <div style={{ width: '220px', height: '110px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
           {businessData?.logo_url ? (
@@ -69,7 +69,7 @@ const SingleLR = ({ businessData, lrData, copyType, bgColor }) => {
       </div>
 
       {/* From / To Row */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', fontSize: '1.1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '1.1rem' }}>
         <div style={{ flex: 1, display: 'flex', alignItems: 'baseline' }}>
           <span>From</span>
           <div style={{ borderBottom: '1px solid black', flex: 1, margin: '0 20px', fontWeight: 'bold', paddingLeft: '10px' }}>
@@ -85,13 +85,13 @@ const SingleLR = ({ businessData, lrData, copyType, bgColor }) => {
       </div>
 
       {/* Consignor */}
-      <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: '8px', fontSize: '0.95rem' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: '6px', fontSize: '0.95rem' }}>
         <span style={{ color: '#ef4444', fontWeight: 'bold', whiteSpace: 'nowrap' }}>Consignor M/s.</span>
         <div style={{ borderBottom: '1px solid black', flex: 1, margin: '0 0 0 10px', fontWeight: 'bold', paddingLeft: '5px' }}>
           {lrData?.consignorName || ''}
         </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: '15px', fontSize: '0.95rem' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: '10px', fontSize: '0.95rem' }}>
         <span style={{ color: '#ef4444', fontWeight: 'bold', whiteSpace: 'nowrap' }}>Address</span>
         <div style={{ borderBottom: '1px solid black', flex: 1, margin: '0 0 0 10px', paddingLeft: '5px' }}>
           {lrData?.consignorAddress || ''}
@@ -99,13 +99,13 @@ const SingleLR = ({ businessData, lrData, copyType, bgColor }) => {
       </div>
 
       {/* Consignee */}
-      <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: '8px', fontSize: '0.95rem' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: '6px', fontSize: '0.95rem' }}>
         <span style={{ color: '#ef4444', fontWeight: 'bold', whiteSpace: 'nowrap' }}>Consignee M/s.</span>
         <div style={{ borderBottom: '1px solid black', flex: 1, margin: '0 0 0 10px', fontWeight: 'bold', paddingLeft: '5px' }}>
           {lrData?.consigneeName || ''}
         </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: '15px', fontSize: '0.95rem' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: '10px', fontSize: '0.95rem' }}>
         <span style={{ color: '#ef4444', fontWeight: 'bold', whiteSpace: 'nowrap' }}>Address</span>
         <div style={{ borderBottom: '1px solid black', flex: 1, margin: '0 0 0 10px', paddingLeft: '5px' }}>
           {lrData?.consigneeAddress || ''}
@@ -113,7 +113,7 @@ const SingleLR = ({ businessData, lrData, copyType, bgColor }) => {
       </div>
 
       {/* Inv No */}
-      <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: '15px', fontSize: '0.95rem' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: '10px', fontSize: '0.95rem' }}>
         <span style={{ color: '#ef4444', fontWeight: 'bold', whiteSpace: 'nowrap' }}>Inv. No. -</span>
         <div style={{ borderBottom: '1px solid black', flex: 1, maxWidth: '400px', margin: '0 0 0 10px', fontWeight: 'bold', color: '#2563eb', paddingLeft: '5px' }}>
           {lrData?.invNo || ''}
@@ -170,20 +170,24 @@ const SingleLR = ({ businessData, lrData, copyType, bgColor }) => {
       </div>
 
       {/* Signatures */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto', paddingTop: '40px', paddingBottom: '10px', paddingLeft: '10px', paddingRight: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '15px', paddingBottom: '10px' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ borderTop: '1px solid black', paddingTop: '5px', width: '200px', fontWeight: 'bold' }}>Driver's Signature</div>
+          <div style={{ width: '150px', borderTop: '1px solid black', margin: '0 auto', paddingTop: '5px', fontWeight: 'bold' }}>
+            Driver's Signature
+          </div>
         </div>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ borderTop: '1px solid black', paddingTop: '5px', width: '200px', fontWeight: 'bold' }}>Receiver's Signature</div>
+          <div style={{ width: '150px', borderTop: '1px solid black', margin: '0 auto', paddingTop: '5px', fontWeight: 'bold' }}>
+            Receiver's Signature
+          </div>
         </div>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ height: '50px', display: 'flex', alignItems: 'end', justifyContent: 'center', marginBottom: '5px' }}>
+          <div style={{ height: '40px', display: 'flex', alignItems: 'end', justifyContent: 'center', marginBottom: '5px' }}>
              {businessData?.signature_url && (
                <img src={businessData.signature_url} alt="Sign" style={{ height: '40px', objectFit: 'contain', mixBlendMode: 'multiply' }} />
              )}
           </div>
-          <div style={{ borderTop: '1px solid black', paddingTop: '5px', width: '250px', fontWeight: 'bold', fontSize: '1rem' }}>
+          <div style={{ width: '200px', borderTop: '1px solid black', margin: '0 auto', paddingTop: '5px', fontWeight: 'bold' }}>
             For {businessData?.name || 'Company'}
           </div>
         </div>
