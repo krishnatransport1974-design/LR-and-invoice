@@ -257,7 +257,7 @@ export default function InvoiceList() {
           </div>
           <div className="flex items-center gap-2">
             <button 
-              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-white transition-colors shadow-sm whitespace-nowrap shrink-0 bg-emerald-500 hover:bg-emerald-600" 
+              className="btn btn-success shrink-0 whitespace-nowrap shadow-sm" 
               onClick={handleSaveToDB}
               disabled={isSaving}
             >
@@ -265,13 +265,13 @@ export default function InvoiceList() {
               Save Invoice
             </button>
             <button 
-              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-white transition-colors shadow-sm whitespace-nowrap shrink-0 bg-blue-600 hover:bg-blue-700" 
+              className="btn btn-primary shrink-0 whitespace-nowrap shadow-sm" 
               onClick={generatePDF}
             >
               <FileDown size={16} /> Download PDF
             </button>
             <button 
-              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors shadow-sm whitespace-nowrap shrink-0 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200" 
+              className="btn btn-secondary shrink-0 whitespace-nowrap shadow-sm" 
               onClick={() => window.print()}
             >
               <Printer size={16} /> Print
