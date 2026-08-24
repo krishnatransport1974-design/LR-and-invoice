@@ -43,10 +43,13 @@ export default function ProfileSetup({ setBusinessData, user }) {
     setLoading(true);
     
     try {
-      // 1. Insert into companies
-      const { data: company, error: companyErr } = await supabase
+      const companyId = crypto.randomUUID();
+
+      // 1. Insert into companies (NO .select() to avoid RLS block)
+      const { error: companyErr } = await supabase
         .from('companies')
         .insert([{
+          id: companyId,
           name: formData.name,
           address: formData.address,
           phone: formData.phone,
@@ -55,9 +58,7 @@ export default function ProfileSetup({ setBusinessData, user }) {
           jurisdiction_city: formData.jurisdiction_city,
           logo_url: formData.logo_url,
           signature_url: formData.signature_url
-        }])
-        .select()
-        .single();
+        }]);
 
       if (companyErr) throw companyErr;
 
@@ -65,7 +66,7 @@ export default function ProfileSetup({ setBusinessData, user }) {
       const { error: mappingErr } = await supabase
         .from('company_users')
         .insert([{
-          company_id: company.id,
+          company_id: companyId,
           user_id: user.id,
           role: 'Admin'
         }]);
@@ -73,7 +74,10 @@ export default function ProfileSetup({ setBusinessData, user }) {
       if (mappingErr) throw mappingErr;
 
       toast.success('Company profile created!');
-      setBusinessData(company);
+      setBusinessData({
+        id: companyId,
+        ...formData
+      });
     } catch (err) {
       console.error('Error saving profile:', err);
       toast.error('Failed to save profile. Check connection or RLS policies.');
