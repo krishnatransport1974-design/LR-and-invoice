@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Link as LinkIcon, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 import { useOutletContext } from 'react-router-dom';
@@ -6,6 +6,7 @@ import { useOutletContext } from 'react-router-dom';
 export default function InvoiceForm({ invoiceData, setInvoiceData }) {
   const [customers, setCustomers] = useState([]);
   const [lrs, setLrs] = useState([]);
+  const [showLRImport, setShowLRImport] = useState(false);
   const { businessData } = useOutletContext();
 
   useEffect(() => {
@@ -97,23 +98,41 @@ export default function InvoiceForm({ invoiceData, setInvoiceData }) {
   return (
     <div className="flex flex-col gap-6">
       
-      {/* Import from LR */}
-      <div className="form-section bg-blue-50 border-blue-200" style={{ backgroundColor: 'var(--accent-light)', borderColor: '#bfdbfe', borderWidth: '1px', borderStyle: 'solid', borderRadius: 'var(--radius-lg)' }}>
-        <div className="form-section-title" style={{ color: 'var(--accent-hover)' }}>Generate from existing LR (Optional)</div>
-        <div className="form-group mb-0">
-          <select value={invoiceData.lr_id || ''} onChange={handleLRChange}>
-            <option value="">-- Select a Lorry Receipt --</option>
-            {lrs.map(lr => (
-              <option key={lr.id} value={lr.id}>
-                {lr.lr_number} - {lr.consignor_name} ({lr.date})
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
       <div className="form-section">
-        <div className="form-section-title">Invoice Details</div>
+        <div className="flex justify-between items-center mb-4 border-b pb-2" style={{ borderColor: 'var(--border-color)' }}>
+          <div className="text-xs font-bold uppercase tracking-wider text-slate-500">Invoice Details</div>
+          <button 
+            className={`text-xs flex items-center gap-1 font-medium transition-colors ${invoiceData.lr_id ? 'text-emerald-600 hover:text-emerald-700' : 'text-blue-600 hover:text-blue-700'}`}
+            onClick={() => setShowLRImport(!showLRImport)}
+          >
+            {invoiceData.lr_id ? <><LinkIcon size={12} /> Linked to LR</> : <><LinkIcon size={12} /> Import from LR (Optional)</>}
+          </button>
+        </div>
+
+        {showLRImport && (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-md shadow-sm relative">
+            <button 
+              className="absolute top-2 right-2 text-blue-400 hover:text-blue-600 p-1"
+              onClick={() => setShowLRImport(false)}
+            >
+              <X size={14} />
+            </button>
+            <label className="text-sm font-semibold text-blue-900 mb-2 block">Select Lorry Receipt to Auto-fill</label>
+            <select 
+              value={invoiceData.lr_id || ''} 
+              onChange={handleLRChange}
+              className="w-full border-blue-300 focus:border-blue-500 focus:ring-blue-200 text-sm"
+            >
+              <option value="">-- No LR Linked --</option>
+              {lrs.map(lr => (
+                <option key={lr.id} value={lr.id}>
+                  {lr.lr_number} - {lr.consignor_name} ({lr.date})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <div className="form-row">
           <div className="form-group">
             <label>Invoice Number</label>
@@ -166,7 +185,7 @@ export default function InvoiceForm({ invoiceData, setInvoiceData }) {
                   <input type="text" value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} />
                 </div>
                 <div className="form-group mb-0">
-                  <label>Qty / Weight</label>
+                  <label>Quantity</label>
                   <input type="number" min="1" step="any" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', e.target.value)} />
                 </div>
                 <div className="form-group mb-0">
