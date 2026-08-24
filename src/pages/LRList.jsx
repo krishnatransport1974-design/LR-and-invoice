@@ -119,7 +119,7 @@ export default function LRList() {
     const element = document.getElementById('lr-preview-content');
     if (!element) return;
     const opt = {
-      margin:       0.2, // Reduced margin to ensure it fits on one page
+      margin:       0, // Set to 0 to prevent premature pagination, html2pdf will automatically paginate long lists
       filename:     `LR_${lrData.lrNumber}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { scale: 2, useCORS: true },

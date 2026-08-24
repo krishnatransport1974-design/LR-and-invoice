@@ -141,7 +141,7 @@ export default function InvoiceList() {
     const element = document.getElementById('invoice-preview-content');
     if (!element) return;
     const opt = {
-      margin:       0.5,
+      margin:       0, // Set to 0 to prevent premature pagination
       filename:     `Invoice_${invoiceData.invoiceNumber}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { scale: 2 },
