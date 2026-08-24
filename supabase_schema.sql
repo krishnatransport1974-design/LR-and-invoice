@@ -46,7 +46,7 @@ FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 -- Company Users RLS
 DROP POLICY IF EXISTS "Users can view users in their company" ON public.company_users;
 CREATE POLICY "Users can view users in their company" ON public.company_users
-FOR SELECT USING (company_id IN (SELECT company_id FROM public.company_users WHERE user_id = auth.uid()));
+FOR SELECT USING (user_id = auth.uid());
 
 DROP POLICY IF EXISTS "Users can insert mapping for themselves" ON public.company_users;
 CREATE POLICY "Users can insert mapping for themselves" ON public.company_users
