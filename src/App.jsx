@@ -44,7 +44,6 @@ function App() {
 
   const checkBusinessProfile = async (userId) => {
     try {
-      setIsCheckingProfile(true);
       // Fetch the company mapping for this user
       const { data: mapping, error: mapErr } = await supabase
         .from('company_users')
