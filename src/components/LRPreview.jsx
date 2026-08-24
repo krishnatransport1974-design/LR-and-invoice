@@ -1,156 +1,206 @@
 import React from 'react';
 
 const SingleLR = ({ businessData, lrData, copyType, bgColor }) => {
-  const formatToUse = lrData?.format || businessData?.default_lr_format || 'standard';
-  const isCompact = formatToUse === 'compact';
-  const isModern = formatToUse === 'modern';
-  
-  const primaryColor = isModern ? '#0f172a' : '#1e293b'; 
-  const accentColor = isModern ? '#2563eb' : '#3b82f6';
-  const borderColor = '#e2e8f0';
-
   return (
     <div style={{
-      backgroundColor: bgColor,
-      padding: isCompact ? '15px' : '20px 30px',
+      backgroundColor: bgColor || 'white',
+      padding: '15px 20px',
       position: 'relative',
-      minHeight: isCompact ? '148mm' : '210mm', // Landscape height
-      width: '100%', // Take up full width of the wrapper (297mm)
+      minHeight: '210mm', // Landscape height
+      width: '100%',
       boxSizing: 'border-box',
       display: 'flex',
       flexDirection: 'column',
-      color: primaryColor,
-      fontFamily: '"Inter", sans-serif',
-      fontSize: isCompact ? '0.8rem' : '0.9rem'
+      color: 'black',
+      fontFamily: '"Arial", sans-serif',
+      fontSize: '0.85rem'
     }} className="single-lr-page">
       
-      {/* Copy Type Tag */}
-      <div className="no-print" style={{ 
-        position: 'absolute', top: '10px', left: '10px', 
-        fontSize: '0.65rem', fontWeight: 'bold', 
-        textTransform: 'uppercase', color: 'white',
-        backgroundColor: accentColor,
-        padding: '4px 8px', borderRadius: '4px'
-      }}>
-        {copyType}
-      </div>
-
-      {/* Header Section */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', borderBottom: `2px solid ${accentColor}`, paddingBottom: '10px' }}>
-        
+      {/* Top Header Row */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
         {/* Logo */}
-        <div style={{ width: '150px', display: 'flex', alignItems: 'center' }}>
+        <div style={{ width: '220px', height: '110px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
           {businessData?.logo_url ? (
-            <img src={businessData.logo_url} alt="Logo" style={{ maxWidth: '100%', maxHeight: '80px', objectFit: 'contain' }} />
+            <img src={businessData.logo_url} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
           ) : (
-            <div style={{ fontSize: '1.2rem', fontWeight: '800', color: accentColor }}>LOGO</div>
+            <div style={{ border: '1px solid black', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontWeight: 'bold' }}>LOGO</span>
+            </div>
           )}
         </div>
 
-        {/* Business Details */}
-        <div style={{ flex: 1, textAlign: 'center', padding: '0 15px' }}>
-          <h1 style={{ fontSize: isCompact ? '1.5rem' : '2rem', fontWeight: '800', margin: '0 0 4px 0', color: primaryColor, textTransform: 'uppercase' }}>
+        {/* Center Details */}
+        <div style={{ flex: 1, textAlign: 'center', padding: '0 20px' }}>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: '900', margin: '0 0 10px 0', textTransform: 'uppercase', fontFamily: '"Times New Roman", serif', letterSpacing: '1px' }}>
             {businessData?.name || 'Company Name'}
           </h1>
-          <p style={{ margin: '0 0 4px 0', color: '#475569', fontWeight: '500' }}>
-            {businessData?.address}
-          </p>
-          <div style={{ fontSize: '0.8rem', color: '#475569' }}>
-            <span style={{ fontWeight: '600' }}>GSTIN:</span> {businessData?.gstin || '-'} &nbsp; | &nbsp; 
-            <span style={{ fontWeight: '600' }}>Phone:</span> {businessData?.phone || '-'}
+          <div style={{ fontWeight: '600', fontSize: '0.9rem', lineHeight: '1.5' }}>
+            {businessData?.address || ''}
+            <br />
+            Contact No.: {businessData?.phone || '-'} &nbsp; E-mail ID : {businessData?.email || '-'}
+            <br />
+            GSTIN: {businessData?.gstin || '-'}
           </div>
         </div>
 
-        {/* LR Box */}
-        <div style={{ width: '180px', textAlign: 'right' }}>
-          <div style={{ border: `1px solid ${borderColor}`, borderRadius: '6px', padding: '10px', backgroundColor: '#f8fafc' }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: '600', color: '#64748b' }}>LORRY RECEIPT NO.</div>
-            <div style={{ fontSize: '1.25rem', fontWeight: '800', color: accentColor, margin: '4px 0' }}>{lrData?.lrNumber || '-'}</div>
-            <div style={{ borderTop: `1px solid ${borderColor}`, margin: '6px -10px' }}></div>
-            <div style={{ fontSize: '0.85rem' }}><strong>Date:</strong> {lrData?.date ? lrData.date.split('-').reverse().join('/') : '-'}</div>
+        {/* Right Bilty Box */}
+        <div style={{ width: '220px', textAlign: 'right' }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 'bold', marginBottom: '5px', textTransform: 'uppercase' }}>
+            SUBJECT TO {businessData?.jurisdiction_city || 'MUMBAI'} JURISDICTION
+          </div>
+          <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid black', textAlign: 'center', marginTop: '5px' }}>
+            <tbody>
+              <tr>
+                <td style={{ border: '1px solid black', padding: '4px', fontWeight: 'bold', fontSize: '0.9rem' }}>Bilty No.</td>
+              </tr>
+              <tr>
+                <td style={{ border: '1px solid black', padding: '4px', fontSize: '1.4rem', fontWeight: 'bold' }}>{lrData?.lrNumber || '-'}</td>
+              </tr>
+              <tr>
+                <td style={{ border: '1px solid black', padding: '4px', textAlign: 'left', display: 'flex', justifyContent: 'space-between', fontSize: '1rem' }}>
+                  <span>Date</span>
+                  <span style={{ fontWeight: 'bold' }}>{lrData?.date ? lrData.date.split('-').reverse().join('/') : '-'}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* From / To Row */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', fontSize: '1.1rem' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'baseline' }}>
+          <span>From</span>
+          <div style={{ borderBottom: '1px solid black', flex: 1, margin: '0 20px', fontWeight: 'bold', paddingLeft: '10px' }}>
+            {lrData?.from || ''}
+          </div>
+        </div>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'baseline' }}>
+          <span>To</span>
+          <div style={{ borderBottom: '1px solid black', flex: 1, margin: '0 0 0 20px', fontWeight: 'bold', paddingLeft: '10px' }}>
+            {lrData?.to || ''}
           </div>
         </div>
       </div>
 
-      {/* From / To & Invoice Info */}
-      <div style={{ display: 'flex', gap: '15px', marginBottom: '15px' }}>
-        <div style={{ flex: 2, display: 'flex', border: `1px solid ${borderColor}`, borderRadius: '6px', overflow: 'hidden' }}>
-          <div style={{ padding: '8px 12px', backgroundColor: '#f8fafc', borderRight: `1px solid ${borderColor}`, display: 'flex', alignItems: 'center' }}>
-            <strong>From:</strong> &nbsp; {lrData?.from || '-'}
-          </div>
-          <div style={{ padding: '8px 12px', display: 'flex', alignItems: 'center' }}>
-            <strong>To:</strong> &nbsp; {lrData?.to || '-'}
-          </div>
+      {/* Consignor */}
+      <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: '8px', fontSize: '0.95rem' }}>
+        <span style={{ color: '#ef4444', fontWeight: 'bold', whiteSpace: 'nowrap' }}>Consignor M/s.</span>
+        <div style={{ borderBottom: '1px solid black', flex: 1, margin: '0 0 0 10px', fontWeight: 'bold', paddingLeft: '5px' }}>
+          {lrData?.consignorName || ''}
         </div>
-        <div style={{ flex: 1, padding: '8px 12px', border: `1px solid ${borderColor}`, borderRadius: '6px', backgroundColor: '#eff6ff' }}>
-          <strong>Inv. No:</strong> {lrData?.invNo || '-'}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: '15px', fontSize: '0.95rem' }}>
+        <span style={{ color: '#ef4444', fontWeight: 'bold', whiteSpace: 'nowrap' }}>Address</span>
+        <div style={{ borderBottom: '1px solid black', flex: 1, margin: '0 0 0 10px', paddingLeft: '5px' }}>
+          {lrData?.consignorAddress || ''}
         </div>
       </div>
 
-      {/* Parties */}
-      <div style={{ display: 'flex', gap: '15px', marginBottom: '15px' }}>
-        <div style={{ flex: 1, border: `1px solid ${borderColor}`, borderRadius: '6px', padding: '10px' }}>
-          <div style={{ fontSize: '0.7rem', fontWeight: '700', color: '#64748b', marginBottom: '4px' }}>CONSIGNOR (SENDER)</div>
-          <div style={{ fontWeight: '700' }}>{lrData?.consignorName || '-'}</div>
-          <div style={{ fontSize: '0.8rem', color: '#475569' }}>{lrData?.consignorAddress || '-'}</div>
+      {/* Consignee */}
+      <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: '8px', fontSize: '0.95rem' }}>
+        <span style={{ color: '#ef4444', fontWeight: 'bold', whiteSpace: 'nowrap' }}>Consignee M/s.</span>
+        <div style={{ borderBottom: '1px solid black', flex: 1, margin: '0 0 0 10px', fontWeight: 'bold', paddingLeft: '5px' }}>
+          {lrData?.consigneeName || ''}
         </div>
-        <div style={{ flex: 1, border: `1px solid ${borderColor}`, borderRadius: '6px', padding: '10px' }}>
-          <div style={{ fontSize: '0.7rem', fontWeight: '700', color: '#64748b', marginBottom: '4px' }}>CONSIGNEE (RECEIVER)</div>
-          <div style={{ fontWeight: '700' }}>{lrData?.consigneeName || '-'}</div>
-          <div style={{ fontSize: '0.8rem', color: '#475569' }}>{lrData?.consigneeAddress || '-'}</div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: '15px', fontSize: '0.95rem' }}>
+        <span style={{ color: '#ef4444', fontWeight: 'bold', whiteSpace: 'nowrap' }}>Address</span>
+        <div style={{ borderBottom: '1px solid black', flex: 1, margin: '0 0 0 10px', paddingLeft: '5px' }}>
+          {lrData?.consigneeAddress || ''}
+        </div>
+      </div>
+
+      {/* Inv No */}
+      <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: '15px', fontSize: '0.95rem' }}>
+        <span style={{ color: '#ef4444', fontWeight: 'bold', whiteSpace: 'nowrap' }}>Inv. No. -</span>
+        <div style={{ borderBottom: '1px solid black', flex: 1, maxWidth: '400px', margin: '0 0 0 10px', fontWeight: 'bold', color: '#2563eb', paddingLeft: '5px' }}>
+          {lrData?.invNo || ''}
         </div>
       </div>
 
       {/* Goods Table */}
-      <div style={{ flex: 1, border: `1px solid ${borderColor}`, borderRadius: '6px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid black', textAlign: 'center', height: '100%' }}>
           <thead>
-            <tr style={{ backgroundColor: '#f8fafc', borderBottom: `2px solid ${borderColor}` }}>
-              <th style={{ padding: '8px 10px', width: '15%' }}>PACKAGES</th>
-              <th style={{ padding: '8px 10px', width: '30%' }}>DESCRIPTION</th>
-              <th style={{ padding: '8px 10px', width: '20%' }}>LORRY NO.</th>
-              <th style={{ padding: '8px 10px', width: '20%' }}>PRODUCT</th>
-              <th style={{ padding: '8px 10px', width: '15%' }}>WEIGHT</th>
+            <tr>
+              <th style={{ border: '1px solid black', padding: '10px 8px', width: '15%' }}>No. of<br/>Packages</th>
+              <th style={{ border: '1px solid black', padding: '10px 8px', width: '30%' }}>Description</th>
+              <th style={{ border: '1px solid black', padding: '10px 8px', width: '15%' }}>Tank/Lorry No.</th>
+              <th style={{ border: '1px solid black', padding: '10px 8px', width: '15%' }}>Product</th>
+              <th style={{ border: '1px solid black', padding: '10px 8px', width: '10%' }}>Weight</th>
+              <th style={{ border: '1px solid black', padding: '10px 8px', width: '15%' }}>Remarks</th>
             </tr>
           </thead>
           <tbody>
             {lrData?.goods?.map((good, idx) => (
-              <tr key={idx} style={{ borderBottom: `1px solid ${borderColor}` }}>
-                <td style={{ padding: '8px 10px', whiteSpace: 'pre-wrap' }}>{good.packages}</td>
-                <td style={{ padding: '8px 10px', whiteSpace: 'pre-wrap' }}>
-                  {good.description}
-                  {good.remarks && <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>Ref: {good.remarks}</div>}
+              <tr key={idx}>
+                <td style={{ borderLeft: '1px solid black', borderRight: '1px solid black', padding: '8px', verticalAlign: 'top', whiteSpace: 'pre-wrap' }}>{good.packages}</td>
+                <td style={{ borderLeft: '1px solid black', borderRight: '1px solid black', padding: '8px', verticalAlign: 'top', whiteSpace: 'pre-wrap' }}>{good.description}</td>
+                <td style={{ borderLeft: '1px solid black', borderRight: '1px solid black', padding: '8px', verticalAlign: 'top' }}>{good.lorryNo}</td>
+                <td style={{ borderLeft: '1px solid black', borderRight: '1px solid black', padding: '8px', verticalAlign: 'top' }}>{good.product}</td>
+                <td style={{ borderLeft: '1px solid black', borderRight: '1px solid black', padding: '8px', verticalAlign: 'top' }}>{good.weight}</td>
+                <td style={{ borderLeft: '1px solid black', borderRight: '1px solid black', padding: '8px', verticalAlign: 'top', borderBottom: idx === 0 && good.remarks ? '1px solid black' : 'none' }}>
+                  {good.remarks}
                 </td>
-                <td style={{ padding: '8px 10px' }}>{good.lorryNo}</td>
-                <td style={{ padding: '8px 10px' }}>{good.product}</td>
-                <td style={{ padding: '8px 10px', fontWeight: '600' }}>{good.weight}</td>
               </tr>
             ))}
+            {/* Fill empty space row so borders go all the way down */}
+            <tr style={{ height: '100%' }}>
+              <td style={{ borderLeft: '1px solid black', borderRight: '1px solid black', padding: '0' }}></td>
+              <td style={{ borderLeft: '1px solid black', borderRight: '1px solid black' }}></td>
+              <td style={{ borderLeft: '1px solid black', borderRight: '1px solid black' }}></td>
+              <td style={{ borderLeft: '1px solid black', borderRight: '1px solid black' }}></td>
+              <td style={{ borderLeft: '1px solid black', borderRight: '1px solid black' }}></td>
+              <td style={{ borderLeft: '1px solid black', borderRight: '1px solid black' }}></td>
+            </tr>
           </tbody>
         </table>
       </div>
 
-      {/* Footer Signatures */}
-      <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 10px' }}>
+      {/* Terms & Conditions */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', marginTop: '4px', lineHeight: '1.2' }}>
+        <div style={{ width: '45%' }}>
+          In case of any shortage or difference in material kindly endorse on receipt no shortage will be entertained in absence of any such endorsement in challan with driver's signature. No responsibility for leakage or damage in natural calamity. Kindly receive the above material in good condition &amp; correct measure.
+        </div>
+        <div style={{ width: '45%', textAlign: 'right' }}>
+          We have not availed convect credit on inputs or capital goods used to provide transport service. we have also not availed the benefit under notification 12/2003 dated 20/6/2003.
+        </div>
+      </div>
+
+      {/* Signatures */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto', paddingTop: '40px', paddingBottom: '10px', paddingLeft: '10px', paddingRight: '10px' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ height: '50px' }}></div>
-          <div style={{ borderTop: '1px solid black', paddingTop: '5px', width: '150px' }}>Driver's Sign</div>
+          <div style={{ borderTop: '1px solid black', paddingTop: '5px', width: '200px', fontWeight: 'bold' }}>Driver's Signature</div>
         </div>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ height: '50px' }}></div>
-          <div style={{ borderTop: '1px solid black', paddingTop: '5px', width: '150px' }}>Receiver's Sign</div>
+          <div style={{ borderTop: '1px solid black', paddingTop: '5px', width: '200px', fontWeight: 'bold' }}>Receiver's Signature</div>
         </div>
         <div style={{ textAlign: 'center' }}>
-          {businessData?.signature_url ? (
-            <img src={businessData.signature_url} alt="Sign" style={{ height: '40px', objectFit: 'contain' }} />
-          ) : (
-            <div style={{ height: '40px' }}></div>
-          )}
-          <div style={{ borderTop: '1px solid black', paddingTop: '5px', width: '200px', fontWeight: '700', color: accentColor }}>
+          <div style={{ height: '50px', display: 'flex', alignItems: 'end', justifyContent: 'center', marginBottom: '5px' }}>
+             {businessData?.signature_url && (
+               <img src={businessData.signature_url} alt="Sign" style={{ height: '40px', objectFit: 'contain', mixBlendMode: 'multiply' }} />
+             )}
+          </div>
+          <div style={{ borderTop: '1px solid black', paddingTop: '5px', width: '250px', fontWeight: 'bold', fontSize: '1rem' }}>
             For {businessData?.name || 'Company'}
           </div>
         </div>
       </div>
+
+      {/* Copy Type Tag */}
+      {copyType && (
+        <div className="no-print" style={{ 
+          position: 'absolute', top: '15px', left: '15px', 
+          fontSize: '0.65rem', fontWeight: 'bold', 
+          textTransform: 'uppercase', color: 'white',
+          backgroundColor: '#ef4444',
+          padding: '4px 8px', borderRadius: '4px'
+        }}>
+          {copyType}
+        </div>
+      )}
+
     </div>
   );
 };
