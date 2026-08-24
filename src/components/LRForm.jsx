@@ -133,7 +133,7 @@ export default function LRForm({ lrData, setLrData }) {
     <div className="flex flex-col gap-6">
       {/* LR Details Section */}
       <div className="form-section">
-        <h3 className="mb-4">Lorry Receipt Details</h3>
+        <div className="form-section-title">Lorry Receipt Details</div>
         <div className="form-row">
           <div className="form-group">
             <label>Bilty / LR No.</label>
@@ -159,7 +159,7 @@ export default function LRForm({ lrData, setLrData }) {
 
       {/* Parties Section */}
       <div className="form-section">
-        <h3 className="mb-4">Parties & Vehicle</h3>
+        <div className="form-section-title">Parties & Vehicle</div>
         
         <div className="form-group">
           <label>Select Vehicle</label>
@@ -193,37 +193,42 @@ export default function LRForm({ lrData, setLrData }) {
       
       {/* Shipment Details Section */}
       <div className="form-section">
-        <h3 className="mb-4">Shipment Details (No Charges)</h3>
+        <div className="form-section-title">Shipment Details (No Charges)</div>
         <div className="flex flex-col gap-4">
-          {lrData.goods.map((good) => (
-            <div key={good.id} className="grid" style={{ gridTemplateColumns: 'repeat(6, 1fr) auto', gap: '0.5rem', alignItems: 'end' }}>
-              <div className="form-group mb-0">
-                <label>Packages</label>
-                <textarea rows="2" value={good.packages} onChange={(e) => updateGood(good.id, 'packages', e.target.value)} placeholder="388 Bags" />
+          {lrData.goods.map((good, index) => (
+            <div key={good.id} className="card-sm relative" style={{ padding: '1rem', backgroundColor: '#f8fafc' }}>
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-xs font-bold text-gray-400">ITEM {index + 1}</span>
+                <button className="btn-icon" onClick={() => removeGood(good.id)} disabled={lrData.goods.length === 1} style={{ padding: '0.25rem', color: 'var(--danger)' }}>
+                  <Trash2 size={14} />
+                </button>
               </div>
-              <div className="form-group mb-0">
-                <label>Description</label>
-                <textarea rows="2" value={good.description} onChange={(e) => updateGood(good.id, 'description', e.target.value)} />
+              <div className="grid grid-cols-2 gap-3" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                <div className="form-group mb-0">
+                  <label>Packages</label>
+                  <textarea rows="1" value={good.packages} onChange={(e) => updateGood(good.id, 'packages', e.target.value)} placeholder="388 Bags" />
+                </div>
+                <div className="form-group mb-0">
+                  <label>Description</label>
+                  <textarea rows="1" value={good.description} onChange={(e) => updateGood(good.id, 'description', e.target.value)} />
+                </div>
+                <div className="form-group mb-0">
+                  <label>Lorry No.</label>
+                  <input type="text" value={good.lorryNo} onChange={(e) => updateGood(good.id, 'lorryNo', e.target.value)} />
+                </div>
+                <div className="form-group mb-0">
+                  <label>Product</label>
+                  <input type="text" value={good.product} onChange={(e) => updateGood(good.id, 'product', e.target.value)} />
+                </div>
+                <div className="form-group mb-0">
+                  <label>Weight</label>
+                  <input type="text" value={good.weight} onChange={(e) => updateGood(good.id, 'weight', e.target.value)} />
+                </div>
+                <div className="form-group mb-0">
+                  <label>Remarks</label>
+                  <textarea rows="1" value={good.remarks} onChange={(e) => updateGood(good.id, 'remarks', e.target.value)} />
+                </div>
               </div>
-              <div className="form-group mb-0">
-                <label>Lorry No.</label>
-                <input type="text" value={good.lorryNo} onChange={(e) => updateGood(good.id, 'lorryNo', e.target.value)} />
-              </div>
-              <div className="form-group mb-0">
-                <label>Product</label>
-                <input type="text" value={good.product} onChange={(e) => updateGood(good.id, 'product', e.target.value)} />
-              </div>
-              <div className="form-group mb-0">
-                <label>Weight</label>
-                <input type="text" value={good.weight} onChange={(e) => updateGood(good.id, 'weight', e.target.value)} />
-              </div>
-              <div className="form-group mb-0">
-                <label>Remarks</label>
-                <textarea rows="2" value={good.remarks} onChange={(e) => updateGood(good.id, 'remarks', e.target.value)} />
-              </div>
-              <button className="btn-icon mb-2" onClick={() => removeGood(good.id)} disabled={lrData.goods.length === 1}>
-                <Trash2 size={18} />
-              </button>
             </div>
           ))}
           <button className="btn btn-secondary" onClick={addGood}>

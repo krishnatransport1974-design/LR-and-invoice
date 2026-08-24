@@ -176,13 +176,15 @@ export default function LRList() {
         </div>
 
         {/* Editor Workspace */}
-        <div className="flex flex-1 overflow-hidden bg-gray-50" style={{ height: 'calc(100vh - 128px)' }}>
-          <div className="flex-1 overflow-y-auto p-4 border-r" style={{ borderColor: 'var(--border-color)', backgroundColor: 'white' }}>
+        <div className="flex flex-1 overflow-hidden" style={{ height: 'calc(100vh - 73px)', backgroundColor: '#e2e8f0' }}>
+          <div className="overflow-y-auto p-6 border-r z-10" style={{ width: '420px', flexShrink: 0, borderColor: 'var(--border-color)', backgroundColor: 'white', boxShadow: '4px 0 15px -3px rgb(0 0 0 / 0.1)' }}>
             <LRForm lrData={lrData} setLrData={setLrData} />
           </div>
-          <div className="flex-1 overflow-y-auto p-8 bg-gray-100 flex justify-center no-print">
-            <div id="lr-preview-content" style={{ width: '210mm', minHeight: '297mm', backgroundColor: 'white', padding: '20mm', boxShadow: 'var(--shadow-md)' }}>
-              <LRPreview businessData={businessData} lrData={lrData} />
+          <div className="flex-1 overflow-y-auto p-8 flex justify-center no-print" style={{ alignItems: 'flex-start' }}>
+            <div className="preview-container" style={{ transformOrigin: 'top center' }}>
+              <div id="lr-preview-content" style={{ width: '210mm', minHeight: '297mm', backgroundColor: 'white', padding: '15mm', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', borderRadius: '4px' }}>
+                <LRPreview businessData={businessData} lrData={lrData} />
+              </div>
             </div>
           </div>
         </div>

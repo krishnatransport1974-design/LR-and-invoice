@@ -158,7 +158,7 @@ export default function InvoiceForm({ invoiceData, setInvoiceData }) {
       
       {/* Import from LR */}
       <div className="form-section bg-blue-50 border-blue-200" style={{ backgroundColor: 'var(--accent-light)', borderColor: '#bfdbfe', borderWidth: '1px', borderStyle: 'solid', borderRadius: 'var(--radius-lg)' }}>
-        <h3 className="mb-4" style={{ color: 'var(--accent-hover)' }}>Generate from existing LR (Optional)</h3>
+        <div className="form-section-title" style={{ color: 'var(--accent-hover)' }}>Generate from existing LR (Optional)</div>
         <div className="form-group mb-0">
           <select value={invoiceData.lr_id || ''} onChange={handleLRChange}>
             <option value="">-- Select a Lorry Receipt --</option>
@@ -172,7 +172,7 @@ export default function InvoiceForm({ invoiceData, setInvoiceData }) {
       </div>
 
       <div className="form-section">
-        <h3 className="mb-4">Invoice Details</h3>
+        <div className="form-section-title">Invoice Details</div>
         <div className="form-row">
           <div className="form-group">
             <label>Invoice Number</label>
@@ -209,25 +209,30 @@ export default function InvoiceForm({ invoiceData, setInvoiceData }) {
       </div>
 
       <div className="form-section">
-        <h3 className="mb-4">Line Items</h3>
+        <div className="form-section-title">Line Items</div>
         <div className="flex flex-col gap-4">
-          {invoiceData.items.map((item) => (
-            <div key={item.id} className="grid" style={{ gridTemplateColumns: '3fr 1fr 1fr auto', gap: '0.5rem', alignItems: 'end' }}>
-              <div className="form-group mb-0">
-                <label>Description</label>
-                <input type="text" value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} />
+          {invoiceData.items.map((item, index) => (
+            <div key={item.id} className="card-sm relative" style={{ padding: '1rem', backgroundColor: '#f8fafc' }}>
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-xs font-bold text-gray-400">ITEM {index + 1}</span>
+                <button className="btn-icon" onClick={() => removeItem(item.id)} disabled={invoiceData.items.length === 1} style={{ padding: '0.25rem', color: 'var(--danger)' }}>
+                  <Trash2 size={14} />
+                </button>
               </div>
-              <div className="form-group mb-0">
-                <label>Qty / Weight</label>
-                <input type="number" min="1" step="any" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', e.target.value)} />
+              <div className="grid grid-cols-2 gap-3" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                <div className="form-group mb-0" style={{ gridColumn: 'span 2' }}>
+                  <label>Description</label>
+                  <input type="text" value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} />
+                </div>
+                <div className="form-group mb-0">
+                  <label>Qty / Weight</label>
+                  <input type="number" min="1" step="any" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', e.target.value)} />
+                </div>
+                <div className="form-group mb-0">
+                  <label>Rate (₹)</label>
+                  <input type="number" min="0" step="0.01" value={item.price} onChange={(e) => updateItem(item.id, 'price', e.target.value)} />
+                </div>
               </div>
-              <div className="form-group mb-0">
-                <label>Rate (₹)</label>
-                <input type="number" min="0" step="0.01" value={item.price} onChange={(e) => updateItem(item.id, 'price', e.target.value)} />
-              </div>
-              <button className="btn-icon mb-2" onClick={() => removeItem(item.id)} disabled={invoiceData.items.length === 1}>
-                <Trash2 size={18} />
-              </button>
             </div>
           ))}
           <button className="btn btn-secondary" onClick={addItem}>
