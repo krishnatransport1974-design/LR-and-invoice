@@ -193,8 +193,8 @@ export default function InvoiceList() {
             <InvoiceForm invoiceData={invoiceData} setInvoiceData={setInvoiceData} />
           </div>
           <div className="flex-1 overflow-y-auto p-8 flex justify-center no-print" style={{ alignItems: 'flex-start' }}>
-            <div className="preview-container" style={{ transformOrigin: 'top center' }}>
-              <div id="invoice-preview-content" style={{ width: '210mm', minHeight: '297mm', backgroundColor: 'white', padding: '15mm', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', borderRadius: '4px' }}>
+            <div className="preview-container" style={{ transformOrigin: 'top center', overflow: 'auto', width: '100%', display: 'flex', justifyContent: 'center' }}>
+              <div id="invoice-preview-content" style={{ width: '794px', minWidth: '794px', minHeight: '1123px', backgroundColor: 'white', padding: '40px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', borderRadius: '4px' }}>
                 <InvoicePreview businessData={businessData} invoiceData={invoiceData} />
               </div>
             </div>

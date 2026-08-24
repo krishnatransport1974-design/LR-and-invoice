@@ -181,8 +181,8 @@ export default function LRList() {
             <LRForm lrData={lrData} setLrData={setLrData} />
           </div>
           <div className="flex-1 overflow-y-auto p-8 flex justify-center no-print" style={{ alignItems: 'flex-start' }}>
-            <div className="preview-container" style={{ transformOrigin: 'top center' }}>
-              <div id="lr-preview-content" style={{ width: '297mm', minHeight: '210mm', backgroundColor: 'white', padding: '15mm', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', borderRadius: '4px' }}>
+            <div className="preview-container" style={{ transformOrigin: 'top center', overflow: 'auto', width: '100%', display: 'flex', justifyContent: 'center' }}>
+              <div id="lr-preview-content" style={{ width: '1123px', minWidth: '1123px', minHeight: '794px', backgroundColor: 'white', padding: '40px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', borderRadius: '4px' }}>
                 <LRPreview businessData={businessData} lrData={lrData} />
               </div>
             </div>
