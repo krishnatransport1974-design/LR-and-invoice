@@ -111,12 +111,10 @@ const InvoicePreview = ({ businessData, invoiceData }) => {
                   <span style={{ fontWeight: '700' }}>{invoiceData.dueDate.split('-').reverse().join('/')}</span>
                 </div>
               )}
-              {businessData?.gstin && (
-                <div style={{ display: 'flex', width: '200px', justifyContent: 'space-between' }}>
-                  <span style={{ fontWeight: '600', color: '#64748b' }}>GSTIN:</span>
-                  <span style={{ fontWeight: '700' }}>{businessData.gstin}</span>
-                </div>
-              )}
+              <div style={{ display: 'flex', width: '200px', justifyContent: 'space-between' }}>
+                <span style={{ fontWeight: '600', color: '#64748b' }}>GSTIN:</span>
+                <span style={{ fontWeight: '700' }}>{businessData?.gstin || '-'}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -127,19 +125,18 @@ const InvoicePreview = ({ businessData, invoiceData }) => {
             <h3 style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', margin: '0 0 8px 0', letterSpacing: '0.05em' }}>Bill To</h3>
             <div style={{ fontWeight: '700', fontSize: '1.1rem', marginBottom: '5px' }}>{invoiceData?.clientName || '-'}</div>
             <div style={{ color: '#475569', fontSize: '0.85rem', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>
-              {invoiceData?.clientAddress || '-'}
+              {invoiceData?.clientAddress || 'Address details'}
             </div>
-            {(invoiceData?.clientPhone || invoiceData?.clientEmail) && (
-              <div style={{ color: '#475569', fontSize: '0.85rem', marginTop: '5px' }}>
-                {invoiceData?.clientPhone && <span><strong>Ph:</strong> {invoiceData.clientPhone} </span>}
-                {invoiceData?.clientEmail && <span><strong>Email:</strong> {invoiceData.clientEmail}</span>}
-              </div>
-            )}
-            {invoiceData?.clientGstin && (
-              <div style={{ color: '#475569', fontSize: '0.85rem', marginTop: '3px' }}>
-                <strong>GSTIN:</strong> {invoiceData.clientGstin}
-              </div>
-            )}
+            
+            <div style={{ color: '#475569', fontSize: '0.85rem', marginTop: '5px' }}>
+              <span><strong>Ph:</strong> {invoiceData?.clientPhone || '__________'} </span>
+            </div>
+            <div style={{ color: '#475569', fontSize: '0.85rem', marginTop: '2px' }}>
+              <span><strong>Email:</strong> {invoiceData?.clientEmail || '__________'}</span>
+            </div>
+            <div style={{ color: '#475569', fontSize: '0.85rem', marginTop: '3px' }}>
+              <strong>GSTIN:</strong> {invoiceData?.clientGstin || '__________'}
+            </div>
           </div>
         </div>
 
