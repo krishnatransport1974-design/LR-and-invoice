@@ -149,9 +149,10 @@ export default function LRList() {
     const observer = new ResizeObserver((entries) => {
       if (entries[0]) {
         const containerWidth = entries[0].contentRect.width;
-        // 1123px is the base width of A4 Landscape. Subtract 60px for visual padding.
-        const newScale = (containerWidth - 60) / 1123;
-        setScale(Math.min(newScale, 1.2)); 
+        if (containerWidth > 0) {
+          const newScale = Math.max((containerWidth - 60) / 1123, 0.1);
+          setScale(Math.min(newScale, 1.2)); 
+        }
       }
     });
     if (containerRef.current) {

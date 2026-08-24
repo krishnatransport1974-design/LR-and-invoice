@@ -170,9 +170,10 @@ export default function InvoiceList() {
     const observer = new ResizeObserver((entries) => {
       if (entries[0]) {
         const containerWidth = entries[0].contentRect.width;
-        // 794px is the base width of A4 Portrait. Subtract 60px for visual padding.
-        const newScale = (containerWidth - 60) / 794;
-        setScale(Math.min(newScale, 1.2)); 
+        if (containerWidth > 0) {
+          const newScale = Math.max((containerWidth - 60) / 794, 0.1);
+          setScale(Math.min(newScale, 1.2)); 
+        }
       }
     });
     if (containerRef.current) {
