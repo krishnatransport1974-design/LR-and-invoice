@@ -198,14 +198,14 @@ export default function InvoiceList() {
           </div>
           <div className="flex items-center gap-2">
             <button 
-              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-white transition-colors shadow-sm hover:shadow" 
+              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-white transition-colors shadow-sm hover:shadow whitespace-nowrap flex-shrink-0" 
               onClick={generatePDF}
               style={{ backgroundColor: '#2563eb', border: '1px solid #1d4ed8' }}
             >
               <FileDown size={16} /> Download PDF
             </button>
             <button 
-              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors shadow-sm hover:shadow" 
+              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors shadow-sm hover:shadow whitespace-nowrap flex-shrink-0" 
               onClick={() => window.print()}
               style={{ backgroundColor: '#f8fafc', color: '#334155', border: '1px solid #cbd5e1' }}
             >

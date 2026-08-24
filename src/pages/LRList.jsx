@@ -173,12 +173,12 @@ export default function LRList() {
             }}>
               <ArrowLeft size={16} /> Back
             </button>
-            <h2 className="text-lg">LR Editor: {lrData.lrNumber} <span style={{fontSize: '0.7rem', color: 'var(--success)', marginLeft: '10px', fontWeight: 'normal'}}>✓ Draft Auto-Saved</span></h2>
+            <h2 className="text-lg truncate min-w-0" style={{ maxWidth: '400px' }}>LR Editor: {lrData.lrNumber} <span style={{fontSize: '0.7rem', color: 'var(--success)', marginLeft: '10px', fontWeight: 'normal'}} className="hidden sm:inline">✓ Draft Auto-Saved</span></h2>
           </div>
           <div className="flex items-center gap-2">
             {lrData.id && (
               <button 
-                className="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors shadow-sm hover:shadow" 
+                className="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors shadow-sm hover:shadow whitespace-nowrap flex-shrink-0" 
                 onClick={() => navigate('/invoices', { state: { sourceLr: lrData } })}
                 style={{ backgroundColor: '#ecfdf5', color: '#059669', border: '1px solid #34d399' }}
               >
@@ -186,14 +186,14 @@ export default function LRList() {
               </button>
             )}
             <button 
-              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-white transition-colors shadow-sm hover:shadow" 
+              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-white transition-colors shadow-sm hover:shadow whitespace-nowrap flex-shrink-0" 
               onClick={generatePDF}
               style={{ backgroundColor: '#2563eb', border: '1px solid #1d4ed8' }}
             >
               <FileDown size={16} /> Download PDF
             </button>
             <button 
-              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors shadow-sm hover:shadow" 
+              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors shadow-sm hover:shadow whitespace-nowrap flex-shrink-0" 
               onClick={() => window.print()}
               style={{ backgroundColor: '#f8fafc', color: '#334155', border: '1px solid #cbd5e1' }}
             >

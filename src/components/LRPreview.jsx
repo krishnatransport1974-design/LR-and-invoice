@@ -126,9 +126,8 @@ const SingleLR = ({ businessData, lrData, copyType, bgColor }) => {
       </div>
 
       {/* Goods Table */}
-      <div style={{ flex: 1, position: 'relative', marginBottom: '4px' }}>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid black', textAlign: 'center', height: '100%' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid black', textAlign: 'center' }}>
           <thead>
             <tr>
               <th style={{ border: '1px solid black', padding: '10px 8px', width: '15%' }}>No. of<br/>Packages</th>
@@ -162,12 +161,11 @@ const SingleLR = ({ businessData, lrData, copyType, bgColor }) => {
               <td style={{ borderLeft: '1px solid black', borderRight: '1px solid black' }}></td>
             </tr>
           </tbody>
-          </table>
-        </div>
+        </table>
       </div>
 
       {/* Terms & Conditions */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', lineHeight: '1.2' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', marginTop: '4px', lineHeight: '1.2' }}>
         <div style={{ width: '45%' }}>
           In case of any shortage or difference in material kindly endorse on receipt no shortage will be entertained in absence of any such endorsement in challan with driver's signature. No responsibility for leakage or damage in natural calamity. Kindly receive the above material in good condition &amp; correct measure.
         </div>
