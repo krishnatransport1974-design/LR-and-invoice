@@ -379,4 +379,25 @@ input:focus, select:focus, textarea:focus {
     box-shadow: none;
     padding: 0;
   }
+  .print-container {
+    padding: 0 !important;
+    background: transparent !important;
+    display: block !important;
+    overflow: visible !important;
+  }
+  .print-container > div {
+    width: 100% !important;
+    height: 100% !important;
+    position: static !important;
+  }
+  .print-container > div > div {
+    transform: none !important;
+    position: static !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+  #lr-preview-content, #invoice-preview-content {
+    box-shadow: none !important;
+    margin: 0 !important;
+  }
 }

@@ -211,7 +211,7 @@ export default function LRList() {
     return (
       <div className="flex flex-col h-full bg-slate-50">
         {/* Editor Header */}
-        <div className="flex items-center justify-between p-4 bg-white border-b sticky top-0 z-10 shadow-sm" style={{ borderColor: 'var(--border-color)' }}>
+        <div className="flex items-center justify-between p-4 bg-white border-b sticky top-0 z-10 shadow-sm no-print" style={{ borderColor: 'var(--border-color)' }}>
           <div className="flex items-center gap-4">
             <button className="btn btn-secondary" onClick={() => {
               setIsEditing(false);
@@ -224,34 +224,30 @@ export default function LRList() {
           </div>
           <div className="flex items-center gap-2">
             <button 
-              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-white transition-colors shadow-sm hover:shadow whitespace-nowrap shrink-0" 
+              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-white transition-colors shadow-sm whitespace-nowrap shrink-0 bg-emerald-500 hover:bg-emerald-600" 
               onClick={handleSaveToDB}
               disabled={isSaving}
-              style={{ backgroundColor: '#10b981', border: '1px solid #059669' }}
             >
               {isSaving ? <Loader2 size={16} className="spin" /> : <Database size={16} />}
               Save LR
             </button>
             {lrData.id && (
               <button 
-                className="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors shadow-sm hover:shadow whitespace-nowrap shrink-0" 
+                className="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors shadow-sm whitespace-nowrap shrink-0 bg-white hover:bg-slate-50 text-emerald-600 border border-emerald-200" 
                 onClick={() => navigate('/invoices', { state: { sourceLr: lrData } })}
-                style={{ backgroundColor: '#ecfdf5', color: '#059669', border: '1px solid #34d399' }}
               >
                 <FileText size={16} /> Generate Invoice
               </button>
             )}
             <button 
-              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-white transition-colors shadow-sm hover:shadow whitespace-nowrap shrink-0" 
+              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-white transition-colors shadow-sm whitespace-nowrap shrink-0 bg-blue-600 hover:bg-blue-700" 
               onClick={generatePDF}
-              style={{ backgroundColor: '#2563eb', border: '1px solid #1d4ed8' }}
             >
               <FileDown size={16} /> Download PDF
             </button>
             <button 
-              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors shadow-sm hover:shadow whitespace-nowrap shrink-0" 
+              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors shadow-sm whitespace-nowrap shrink-0 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200" 
               onClick={() => window.print()}
-              style={{ backgroundColor: '#f8fafc', color: '#334155', border: '1px solid #cbd5e1' }}
             >
               <Printer size={16} /> Print
             </button>
@@ -261,12 +257,12 @@ export default function LRList() {
         {/* Editor Workspace */}
         <div className="flex flex-1 overflow-hidden" style={{ height: 'calc(100vh - 73px)', backgroundColor: '#e2e8f0' }}>
           
-          <div className="overflow-y-auto p-6 border-r z-10" style={{ width: '420px', flexShrink: 0, borderColor: 'var(--border-color)', backgroundColor: 'white', boxShadow: '4px 0 15px -3px rgb(0 0 0 / 0.1)' }}>
+          <div className="overflow-y-auto p-6 border-r z-10 no-print" style={{ width: '420px', flexShrink: 0, borderColor: 'var(--border-color)', backgroundColor: 'white', boxShadow: '4px 0 15px -3px rgb(0 0 0 / 0.1)' }}>
             <LRForm lrData={lrData} setLrData={setLrData} />
           </div>
           
           <div 
-            className="flex-1 overflow-auto bg-slate-200 flex justify-center items-center p-8 no-print" 
+            className="flex-1 overflow-auto bg-slate-200 flex justify-center items-center p-8 print-container" 
             style={{ minWidth: 0 }}
           >
             <div style={{ width: `${1123 * scale}px`, height: `${794 * scale}px`, position: 'relative' }}>
