@@ -163,23 +163,22 @@ export default function InvoiceList() {
     (inv.client_name && inv.client_name.toLowerCase().includes(search.toLowerCase()))
   );
 
-  const containerRef = useRef(null);
   const [scale, setScale] = useState(1);
 
   useEffect(() => {
-    const observer = new ResizeObserver((entries) => {
-      if (entries[0]) {
-        const containerWidth = entries[0].contentRect.width;
-        if (containerWidth > 0) {
-          const newScale = Math.max((containerWidth - 60) / 794, 0.1);
-          setScale(Math.min(newScale, 1.2)); 
-        }
+    const calculateScale = () => {
+      // 420px sidebar + 64px padding (p-8 is 2rem = 32px each side)
+      const availableWidth = window.innerWidth - 420 - 64; 
+      if (availableWidth > 0) {
+        // 794px is the base width of A4 Portrait. Subtract 20px for visual padding.
+        const newScale = Math.max((availableWidth - 20) / 794, 0.1);
+        setScale(Math.min(newScale, 1.2)); 
       }
-    });
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-    return () => observer.disconnect();
+    };
+    
+    calculateScale();
+    window.addEventListener('resize', calculateScale);
+    return () => window.removeEventListener('resize', calculateScale);
   }, []);
 
   if (isEditing) {
@@ -213,11 +212,10 @@ export default function InvoiceList() {
             <InvoiceForm invoiceData={invoiceData} setInvoiceData={setInvoiceData} />
           </div>
           <div 
-            ref={containerRef}
-            className="flex-1 overflow-hidden bg-slate-200 flex justify-center items-center no-print" 
+            className="flex-1 overflow-auto bg-slate-200 flex justify-center items-center p-8 no-print" 
           >
-            <div style={{ width: `${794 * scale}px`, height: `${1123 * scale}px` }}>
-              <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left' }}>
+            <div style={{ width: `${794 * scale}px`, height: `${1123 * scale}px`, display: 'flex', justifyContent: 'center' }}>
+              <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: '794px', height: '1123px' }}>
                 <div id="invoice-preview-content" style={{ width: '794px', minWidth: '794px', minHeight: '1123px', backgroundColor: 'white', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', borderRadius: '4px', overflow: 'hidden' }}>
                   <InvoicePreview businessData={businessData} invoiceData={invoiceData} />
                 </div>
