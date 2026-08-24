@@ -178,17 +178,25 @@ export default function LRList() {
           <div className="flex items-center gap-2">
             {lrData.id && (
               <button 
-                className="btn btn-secondary" 
+                className="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors shadow-sm hover:shadow" 
                 onClick={() => navigate('/invoices', { state: { sourceLr: lrData } })}
-                style={{ color: 'var(--success)' }}
+                style={{ backgroundColor: '#ecfdf5', color: '#059669', border: '1px solid #34d399' }}
               >
                 <FileText size={16} /> Generate Invoice
               </button>
             )}
-            <button className="btn btn-primary" onClick={generatePDF}>
+            <button 
+              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-white transition-colors shadow-sm hover:shadow" 
+              onClick={generatePDF}
+              style={{ backgroundColor: '#2563eb', border: '1px solid #1d4ed8' }}
+            >
               <FileDown size={16} /> Download PDF
             </button>
-            <button className="btn btn-secondary" onClick={() => window.print()}>
+            <button 
+              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors shadow-sm hover:shadow" 
+              onClick={() => window.print()}
+              style={{ backgroundColor: '#f8fafc', color: '#334155', border: '1px solid #cbd5e1' }}
+            >
               <Printer size={16} /> Print
             </button>
           </div>
@@ -203,9 +211,10 @@ export default function LRList() {
           
           <div 
             className="flex-1 overflow-auto bg-slate-200 flex justify-center items-center p-8 no-print" 
+            style={{ minWidth: 0 }}
           >
-            <div style={{ width: `${1123 * scale}px`, height: `${794 * scale}px`, display: 'flex', justifyContent: 'center' }}>
-              <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: '1123px', height: '794px' }}>
+            <div style={{ width: `${1123 * scale}px`, height: `${794 * scale}px`, position: 'relative' }}>
+              <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: '1123px', height: '794px', position: 'absolute', top: 0, left: 0 }}>
                 <div id="lr-preview-content" style={{ width: '1123px', minWidth: '1123px', minHeight: '794px', backgroundColor: 'white', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', borderRadius: '4px', overflow: 'hidden' }}>
                   <LRPreview businessData={businessData} lrData={lrData} />
                 </div>

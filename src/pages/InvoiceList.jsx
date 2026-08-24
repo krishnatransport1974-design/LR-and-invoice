@@ -197,10 +197,18 @@ export default function InvoiceList() {
             <h2 className="text-lg">Invoice Editor: {invoiceData.invoiceNumber} <span style={{fontSize: '0.7rem', color: 'var(--success)', marginLeft: '10px', fontWeight: 'normal'}}>✓ Draft Auto-Saved</span></h2>
           </div>
           <div className="flex items-center gap-2">
-            <button className="btn btn-primary" onClick={generatePDF}>
+            <button 
+              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-white transition-colors shadow-sm hover:shadow" 
+              onClick={generatePDF}
+              style={{ backgroundColor: '#2563eb', border: '1px solid #1d4ed8' }}
+            >
               <FileDown size={16} /> Download PDF
             </button>
-            <button className="btn btn-secondary" onClick={() => window.print()}>
+            <button 
+              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors shadow-sm hover:shadow" 
+              onClick={() => window.print()}
+              style={{ backgroundColor: '#f8fafc', color: '#334155', border: '1px solid #cbd5e1' }}
+            >
               <Printer size={16} /> Print
             </button>
           </div>
@@ -213,9 +221,10 @@ export default function InvoiceList() {
           </div>
           <div 
             className="flex-1 overflow-auto bg-slate-200 flex justify-center items-center p-8 no-print" 
+            style={{ minWidth: 0 }}
           >
-            <div style={{ width: `${794 * scale}px`, height: `${1123 * scale}px`, display: 'flex', justifyContent: 'center' }}>
-              <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: '794px', height: '1123px' }}>
+            <div style={{ width: `${794 * scale}px`, height: `${1123 * scale}px`, position: 'relative' }}>
+              <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: '794px', height: '1123px', position: 'absolute', top: 0, left: 0 }}>
                 <div id="invoice-preview-content" style={{ width: '794px', minWidth: '794px', minHeight: '1123px', backgroundColor: 'white', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', borderRadius: '4px', overflow: 'hidden' }}>
                   <InvoicePreview businessData={businessData} invoiceData={invoiceData} />
                 </div>
