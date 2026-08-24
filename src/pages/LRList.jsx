@@ -175,21 +175,18 @@ export default function LRList() {
           </div>
         </div>
 
-        {/* Editor Workspace - Top/Bottom Split for Landscape Document */}
-        <div className="flex flex-col flex-1 overflow-hidden" style={{ height: 'calc(100vh - 73px)', backgroundColor: '#e2e8f0' }}>
+        {/* Editor Workspace */}
+        <div className="flex flex-1 overflow-hidden" style={{ height: 'calc(100vh - 73px)', backgroundColor: '#e2e8f0' }}>
           
-          {/* Top Form Section */}
-          <div className="overflow-y-auto p-6 border-b z-10" style={{ height: '40vh', flexShrink: 0, borderColor: 'var(--border-color)', backgroundColor: 'white', boxShadow: '0 4px 15px -3px rgb(0 0 0 / 0.1)' }}>
-            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-              <LRForm lrData={lrData} setLrData={setLrData} />
-            </div>
+          <div className="overflow-y-auto p-6 border-r z-10" style={{ width: '420px', flexShrink: 0, borderColor: 'var(--border-color)', backgroundColor: 'white', boxShadow: '4px 0 15px -3px rgb(0 0 0 / 0.1)' }}>
+            <LRForm lrData={lrData} setLrData={setLrData} />
           </div>
           
-          {/* Bottom Preview Section */}
-          <div className="flex-1 overflow-auto p-8 no-print" style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
-            <div className="preview-container" style={{ transformOrigin: 'top center', display: 'flex', justifyContent: 'center' }}>
-              <div id="lr-preview-content" style={{ width: '1123px', minWidth: '1123px', minHeight: '794px', backgroundColor: 'white', padding: '40px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', borderRadius: '4px' }}>
-                <LRPreview businessData={businessData} lrData={lrData} />
+          <div className="flex-1 overflow-auto p-8 flex justify-center no-print" style={{ alignItems: 'flex-start' }}>
+            <div style={{ width: '730px', height: '516px' }}> {/* Scaled layout bounds (1123*0.65 = 730) */}
+              <div style={{ transform: 'scale(0.65)', transformOrigin: 'top left' }}>
+                <div id="lr-preview-content" style={{ width: '1123px', minWidth: '1123px', minHeight: '794px', backgroundColor: 'white', padding: '40px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', borderRadius: '4px' }}>
+                  <LRPreview businessData={businessData} lrData={lrData} />
               </div>
             </div>
           </div>

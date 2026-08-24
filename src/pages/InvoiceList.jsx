@@ -192,10 +192,12 @@ export default function InvoiceList() {
           <div className="overflow-y-auto p-6 border-r z-10" style={{ width: '420px', flexShrink: 0, borderColor: 'var(--border-color)', backgroundColor: 'white', boxShadow: '4px 0 15px -3px rgb(0 0 0 / 0.1)' }}>
             <InvoiceForm invoiceData={invoiceData} setInvoiceData={setInvoiceData} />
           </div>
-          <div className="flex-1 overflow-y-auto p-8 flex justify-center no-print" style={{ alignItems: 'flex-start' }}>
-            <div className="preview-container" style={{ transformOrigin: 'top center', overflow: 'auto', width: '100%', display: 'flex', justifyContent: 'center' }}>
-              <div id="invoice-preview-content" style={{ width: '794px', minWidth: '794px', minHeight: '1123px', backgroundColor: 'white', padding: '40px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', borderRadius: '4px' }}>
-                <InvoicePreview businessData={businessData} invoiceData={invoiceData} />
+          <div className="flex-1 overflow-auto p-8 flex justify-center no-print" style={{ alignItems: 'flex-start' }}>
+            <div style={{ width: '635px', height: '898px' }}> {/* Scaled layout bounds (794*0.8 = 635) */}
+              <div style={{ transform: 'scale(0.8)', transformOrigin: 'top left' }}>
+                <div id="invoice-preview-content" style={{ width: '794px', minWidth: '794px', minHeight: '1123px', backgroundColor: 'white', padding: '40px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', borderRadius: '4px' }}>
+                  <InvoicePreview businessData={businessData} invoiceData={invoiceData} />
+                </div>
               </div>
             </div>
           </div>
