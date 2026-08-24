@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabase';
 import { Loader2, Plus, Search, FileText, Printer, FileDown, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -141,11 +141,12 @@ export default function InvoiceList() {
     const element = document.getElementById('invoice-preview-content');
     if (!element) return;
     const opt = {
-      margin:       0, // Set to 0 to prevent premature pagination
+      margin:       0,
       filename:     `Invoice_${invoiceData.invoiceNumber}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { scale: 2 },
-      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+      pagebreak:    { mode: 'css', before: '.page-break' }
     };
     toast.promise(
       html2pdf().set(opt).from(element).save(),
@@ -162,9 +163,27 @@ export default function InvoiceList() {
     (inv.client_name && inv.client_name.toLowerCase().includes(search.toLowerCase()))
   );
 
+  const containerRef = useRef(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const observer = new ResizeObserver((entries) => {
+      if (entries[0]) {
+        const containerWidth = entries[0].contentRect.width;
+        // 794px is the base width of A4 Portrait. Subtract 60px for visual padding.
+        const newScale = (containerWidth - 60) / 794;
+        setScale(Math.min(newScale, 1.2)); 
+      }
+    });
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+    return () => observer.disconnect();
+  }, []);
+
   if (isEditing) {
     return (
-      <div className="flex flex-col h-full" style={{ margin: '-2rem' }}>
+      <div className="flex flex-col h-full bg-slate-50">
         {/* Editor Header */}
         <div className="flex items-center justify-between p-4 bg-white border-b sticky top-0 z-10 shadow-sm" style={{ borderColor: 'var(--border-color)' }}>
           <div className="flex items-center gap-4">
@@ -192,10 +211,13 @@ export default function InvoiceList() {
           <div className="overflow-y-auto p-6 border-r z-10" style={{ width: '420px', flexShrink: 0, borderColor: 'var(--border-color)', backgroundColor: 'white', boxShadow: '4px 0 15px -3px rgb(0 0 0 / 0.1)' }}>
             <InvoiceForm invoiceData={invoiceData} setInvoiceData={setInvoiceData} />
           </div>
-          <div className="flex-1 overflow-auto p-8 flex justify-center no-print" style={{ alignItems: 'flex-start' }}>
-            <div style={{ width: '635px', height: '898px' }}> {/* Scaled layout bounds (794*0.8 = 635) */}
-              <div style={{ transform: 'scale(0.8)', transformOrigin: 'top left' }}>
-                <div id="invoice-preview-content" style={{ width: '794px', minWidth: '794px', minHeight: '1123px', backgroundColor: 'white', padding: '40px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', borderRadius: '4px' }}>
+          <div 
+            ref={containerRef}
+            className="flex-1 overflow-hidden bg-slate-200 flex justify-center items-center no-print" 
+          >
+            <div style={{ width: `${794 * scale}px`, height: `${1123 * scale}px` }}>
+              <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left' }}>
+                <div id="invoice-preview-content" style={{ width: '794px', minWidth: '794px', minHeight: '1123px', backgroundColor: 'white', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)', borderRadius: '4px', overflow: 'hidden' }}>
                   <InvoicePreview businessData={businessData} invoiceData={invoiceData} />
                 </div>
               </div>

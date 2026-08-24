@@ -4,16 +4,17 @@ const SingleLR = ({ businessData, lrData, copyType, bgColor }) => {
   return (
     <div style={{
       backgroundColor: bgColor || 'white',
-      padding: '15px 20px',
+      padding: '20px',
       position: 'relative',
-      minHeight: '210mm', // Landscape height
+      height: '210mm', // Strict Landscape height
       width: '100%',
       boxSizing: 'border-box',
       display: 'flex',
       flexDirection: 'column',
       color: 'black',
       fontFamily: '"Arial", sans-serif',
-      fontSize: '0.85rem'
+      fontSize: '0.85rem',
+      overflow: 'hidden' // Prevent any internal expansion from ruining PDF pagination
     }} className="single-lr-page">
       
       {/* Top Header Row */}

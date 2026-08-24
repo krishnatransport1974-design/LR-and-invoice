@@ -25,7 +25,8 @@ export default function InvoicePreview({ businessData, invoiceData }) {
       </style>
       <div style={{
         width: '210mm',
-        minHeight: '297mm',
+        height: '297mm',
+        overflow: 'hidden',
         backgroundColor: '#ffffff',
         padding: '20px 30px',
         boxSizing: 'border-box',
