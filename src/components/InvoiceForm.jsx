@@ -1,10 +1,30 @@
 import { Plus, Trash2, Search, ChevronDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { calculateInvoiceTotals } from '../utils/invoiceCalculations';
+import { supabase } from '../supabase';
 
 export default function InvoiceForm({ invoiceData, setInvoiceData }) {
-  const { businessData, customers, products } = useOutletContext();
+  const { businessData } = useOutletContext();
+  const [customers, setCustomers] = useState([]);
+  const [products, setProducts] = useState([]);
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [custRes, prodRes] = await Promise.all([
+          supabase.from('customers').select('id, name, address, company_name, phone, email, gstin'),
+          supabase.from('products').select('*')
+        ]);
+        if (custRes.data) setCustomers(custRes.data);
+        if (prodRes.data) setProducts(prodRes.data);
+      } catch (err) {
+        console.error("Error fetching dependencies", err);
+      }
+    };
+    fetchData();
+  }, []);
+
   const [expandedSections, setExpandedSections] = useState({
     details: true,
     billing: true,
