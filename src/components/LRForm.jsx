@@ -110,6 +110,10 @@ export default function LRForm({ lrData, setLrData }) {
             <input type="text" value={lrData.to} onChange={(e) => updateLr('to', e.target.value)} />
           </div>
         </div>
+        <div className="form-group">
+          <label>Consignor Invoice No. / Ref.</label>
+          <input type="text" value={lrData.invNo || ''} onChange={(e) => updateLr('invNo', e.target.value)} placeholder="e.g. INV-2023-001" />
+        </div>
       </div>
 
       {/* Parties Section */}
